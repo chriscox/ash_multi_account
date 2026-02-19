@@ -12,19 +12,18 @@ Many apps need multi-account support: family accounts, work/personal separation,
 
 There's nothing like this in the Ash ecosystem today.
 
-## Features (Phase 2 — Core Extension)
+## Features
 
 - Session-scoped account linking (primary user + linked accounts)
 - Configurable active-user checks, display fields, and max linked accounts
 - Self-link prevention and max-account enforcement
 - Activate/deactivate linked accounts with status tracking
 - Works alongside AshAuthentication's existing session management
-
-## Planned Features (Phase 3 — Phoenix Integration)
-
+- Phoenix controller mixin with link/switch actions and session regeneration
 - LiveView hook that resolves `current_user` and `primary_user` on every mount
-- Default account switcher component with override system
+- Default account switcher component with slot-based override system
 - Router macros for link/switch routes
+- Session token plug for automatic token management
 
 ## Usage
 
@@ -66,11 +65,63 @@ defmodule MyApp.Accounts.LinkedAccount do
 end
 ```
 
-### 3. Phoenix integration (Phase 3 — not yet implemented)
+### 3. Add routes and controller
 
-Routes, controllers, LiveView hooks, and account switcher components are
-planned for the next phase. See the
-[planning issue](https://github.com/chriscox/cano-phx/issues/124) for details.
+```elixir
+# lib/my_app_web/router.ex
+defmodule MyAppWeb.Router do
+  use MyAppWeb, :router
+  use AshMultiAccount.Phoenix.Router
+
+  scope "/", MyAppWeb do
+    pipe_through [:browser, AshMultiAccount.Phoenix.Plug]
+    multi_account_routes MultiAccountController, MyApp.Accounts.User
+  end
+end
+```
+
+```elixir
+# lib/my_app_web/controllers/multi_account_controller.ex
+defmodule MyAppWeb.MultiAccountController do
+  use MyAppWeb, :controller
+  use AshMultiAccount.Phoenix.Controller, user_resource: MyApp.Accounts.User
+
+  # Optionally override redirect paths
+  def after_link_path(_conn), do: ~p"/"
+  def after_switch_path(_conn), do: ~p"/"
+  def sign_in_path(_conn, primary_user_id), do: ~p"/sign-in?return_to=/link/p/#{primary_user_id}"
+end
+```
+
+### 4. Add LiveView hook
+
+```elixir
+live_session :authenticated,
+  on_mount: [
+    {AshMultiAccount.Phoenix.LiveHook, {:load_multi_account, MyApp.Accounts.User}}
+  ] do
+  # your live routes...
+end
+```
+
+### 5. Use the account switcher component
+
+```elixir
+<AshMultiAccount.Phoenix.Components.account_switcher
+  current_user={@current_user}
+  primary_user={@primary_user}
+>
+  <:account :let={account}>
+    <.link :if={!account.current?} href={account.switch_url}>
+      {account.user.name}
+    </.link>
+    <span :if={account.current?}>{account.user.name} (active)</span>
+  </:account>
+  <:add_account :let={url}>
+    <.link href={url}>Add another account</.link>
+  </:add_account>
+</AshMultiAccount.Phoenix.Components.account_switcher>
+```
 
 ## Installation
 
