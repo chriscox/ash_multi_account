@@ -4,6 +4,7 @@ defmodule AshMultiAccount.Test.Domain do
 
   resources do
     resource AshMultiAccount.Test.User
+    resource AshMultiAccount.Test.UserNoActiveCheck
     resource AshMultiAccount.Test.LinkedAccount
   end
 end

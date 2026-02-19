@@ -1,7 +1,8 @@
 defmodule AshMultiAccount.IntegrationTest do
   use ExUnit.Case, async: true
 
-  alias AshMultiAccount.Test.{LinkedAccount, User}
+  alias AshMultiAccount.Test.LinkedAccount
+  alias AshMultiAccount.Test.User
 
   setup do
     session_token = Ash.UUID.generate()

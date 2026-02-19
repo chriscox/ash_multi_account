@@ -26,4 +26,27 @@ defmodule AshMultiAccount.HelpersTest do
       end
     end
   end
+
+  describe "validate_user_active/2" do
+    test "returns :ok when user passes the active_check" do
+      user = %AshMultiAccount.Test.User{status: :active}
+      assert :ok = Helpers.validate_user_active(user, AshMultiAccount.Test.User)
+    end
+
+    test "returns {:error, :not_active} when user fails the active_check" do
+      user = %AshMultiAccount.Test.User{status: :inactive}
+      assert {:error, :not_active} = Helpers.validate_user_active(user, AshMultiAccount.Test.User)
+    end
+
+    test "returns :ok when no active_check is configured on the resource" do
+      user = %AshMultiAccount.Test.UserNoActiveCheck{name: "Test"}
+      assert :ok = Helpers.validate_user_active(user, AshMultiAccount.Test.UserNoActiveCheck)
+    end
+
+    test "raises BadMapError when user is nil" do
+      assert_raise BadMapError, fn ->
+        Helpers.validate_user_active(nil, AshMultiAccount.Test.User)
+      end
+    end
+  end
 end
