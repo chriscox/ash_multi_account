@@ -77,7 +77,7 @@ defmodule AshMultiAccount.Verifier do
             end
         end
 
-      {:ok, nil} ->
+      :error ->
         :ok
     end
   end

@@ -44,13 +44,8 @@ defmodule AshMultiAccount.Preparations.FilterLinkedAccounts do
 
         Ash.Query.filter(query, ^active_ref == ^value)
 
-      {:ok, nil} ->
-        query
-
       :error ->
-        raise ArgumentError,
-              "AshMultiAccount: Failed to read active_check from #{inspect(config.user_resource)}. " <>
-                "Ensure the resource uses the AshMultiAccount extension."
+        query
     end
   end
 end
