@@ -23,6 +23,7 @@ defmodule Demo.Accounts.User do
     strategies do
       password :password do
         identity_field :email
+        register_action_accept [:name]
 
         register_action_name :register_with_password
         sign_in_action_name :sign_in_with_password
@@ -55,6 +56,7 @@ defmodule Demo.Accounts.User do
     end
 
     attribute :name, :string do
+      allow_nil? false
       public? true
     end
 

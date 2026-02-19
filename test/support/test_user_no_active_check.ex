@@ -10,7 +10,7 @@ defmodule AshMultiAccount.Test.UserNoActiveCheck do
   end
 
   multi_account do
-    linked_account_resource(AshMultiAccount.Test.LinkedAccount)
+    linked_account_resource(AshMultiAccount.Test.LinkedAccountNoActiveCheck)
   end
 
   actions do

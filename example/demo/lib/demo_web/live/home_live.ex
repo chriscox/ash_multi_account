@@ -4,14 +4,38 @@ defmodule DemoWeb.HomeLive do
   @impl true
   def render(assigns) do
     ~H"""
-    <div class="navbar bg-base-100 shadow-sm">
-      <div class="flex-1">
-        <a href="/" class="btn btn-ghost text-lg">AshMultiAccount Demo</a>
-      </div>
-      <div :if={@current_user} class="flex-none">
-        <.link href={~p"/sign-out"} class="btn btn-ghost btn-sm text-error">
-          Sign Out
-        </.link>
+    <div class="bg-base-100 shadow-sm">
+      <div class="navbar max-w-2xl mx-auto px-4">
+        <div class="flex-1">
+          <a href="/" class="text-lg font-semibold">AshMultiAccount Demo</a>
+        </div>
+        <div :if={@current_user} class="flex-none">
+          <div class="dropdown dropdown-end">
+            <div tabindex="0" role="button" class="btn btn-ghost gap-2">
+              <span class="hero-user-circle-solid w-6 h-6" />
+              <span class="text-sm">{@current_user.email}</span>
+            </div>
+            <ul
+              tabindex="0"
+              class="dropdown-content menu bg-base-100 rounded-box z-10 w-fit shadow-lg border border-base-200 mt-2"
+            >
+              <%!-- All accounts --%>
+              <.account_menu_items
+                current_user={@current_user}
+                primary_user={@primary_user}
+              />
+
+              <%!-- Sign out --%>
+              <hr class="border-base-300 my-0.5" />
+              <li>
+                <.link href={~p"/sign-out"} class="text-error">
+                  <span class="hero-arrow-right-on-rectangle-solid w-5 h-5" />
+                  Sign out
+                </.link>
+              </li>
+            </ul>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -45,82 +69,109 @@ defmodule DemoWeb.HomeLive do
           <div class="card-body">
             <h2 class="card-title">Multi-Account Status</h2>
             <%= if @primary_user do %>
-              <p class="text-success">Multi-account session active</p>
-              <dl class="space-y-2">
-                <div class="flex gap-2">
-                  <dt class="font-medium text-base-content/60">Primary user:</dt>
-                  <dd>{@primary_user.email}</dd>
+              <div class="flex items-start gap-2 text-success">
+                <span class="hero-check-circle-solid w-5 h-5 mt-0.5 shrink-0" />
+                <div>
+                  <p>Multi-account session active</p>
+                  <p class="text-sm text-base-content/60">
+                    Primary account: <strong>{@primary_user.email}</strong>.
+                    Use the menu above to switch between linked accounts.
+                  </p>
                 </div>
-              </dl>
+              </div>
             <% else %>
-              <p class="text-base-content/50">Single-account mode</p>
+              <div class="flex items-start gap-2 text-base-content/50">
+                <span class="hero-information-circle w-5 h-5 mt-0.5 shrink-0" />
+                <p class="text-sm">
+                  Single-account mode. Link another account using
+                  <strong>Add another account</strong> in the user menu to enable switching.
+                </p>
+              </div>
             <% end %>
           </div>
         </div>
 
         <div class="card bg-base-100 shadow-sm mb-6">
           <div class="card-body">
-            <h2 class="card-title">Account Switcher</h2>
-            <div class="space-y-2">
-              <AshMultiAccount.Phoenix.Components.account_switcher
-                current_user={@current_user}
-                primary_user={@primary_user}
-              >
-                <:account :let={account}>
-                  <div class={"flex items-center justify-between p-3 rounded-lg #{if account.current?, do: "bg-primary/10 border border-primary/20", else: "bg-base-200 hover:bg-base-300"}"}>
-                    <div>
-                      <span class="font-medium">
-                        {account.user.name || account.user.email}
-                      </span>
-                      <span
-                        :if={account.primary?}
-                        class="badge badge-ghost badge-sm ml-2"
-                      >
-                        primary
-                      </span>
-                      <span
-                        :if={account.current?}
-                        class="badge badge-primary badge-sm ml-2"
-                      >
-                        active
-                      </span>
-                      <div class="text-sm text-base-content/50">{account.user.email}</div>
-                    </div>
-                    <.link
-                      :if={!account.current?}
-                      href={account.switch_url}
-                      class="btn btn-sm btn-ghost text-primary"
-                    >
-                      Switch
-                    </.link>
-                  </div>
-                </:account>
-
-                <:add_account :let={url}>
-                  <.link
-                    href={url}
-                    class="btn btn-ghost btn-block mt-2"
-                  >
-                    + Add another account
-                  </.link>
-                </:add_account>
-              </AshMultiAccount.Phoenix.Components.account_switcher>
-            </div>
+            <h2 class="card-title text-base">How to Try It</h2>
+            <ol class="list-decimal list-inside space-y-2 text-sm text-base-content/70">
+              <li>
+                Click the user menu above and select <strong>Add another account</strong>.
+              </li>
+              <li>
+                Register or sign in with a different email &mdash; the accounts will be linked automatically.
+              </li>
+              <li>
+                Open the user menu again to switch between your linked accounts.
+              </li>
+            </ol>
           </div>
         </div>
       <% else %>
         <div class="card bg-base-100 shadow-sm">
           <div class="card-body items-center text-center">
-            <h2 class="card-title">Welcome</h2>
-            <p class="text-base-content/60 mb-4">Sign in or create an account to get started.</p>
+            <h2 class="card-title">Welcome to AshMultiAccount</h2>
+            <p class="text-base-content/60 mb-2">
+              This demo shows multi-account linking and switching powered by the
+              <code class="text-sm">ash_multi_account</code> library.
+            </p>
+            <p class="text-base-content/60 mb-4">
+              Register two accounts, then link and switch between them.
+            </p>
             <div class="card-actions">
-              <.link href={~p"/sign-in"} class="btn btn-primary">Sign In</.link>
-              <.link href={~p"/register"} class="btn btn-ghost">Register</.link>
+              <.link href={~p"/register"} class="btn btn-primary">Register</.link>
+              <.link href={~p"/sign-in"} class="btn btn-ghost">Sign In</.link>
             </div>
           </div>
         </div>
       <% end %>
     </main>
+    """
+  end
+
+  defp account_menu_items(assigns) do
+    ~H"""
+    <AshMultiAccount.Phoenix.Components.account_switcher
+      current_user={@current_user}
+      primary_user={@primary_user}
+    >
+      <:account :let={account}>
+        <%= if account.current? do %>
+          <li class="pointer-events-none">
+            <div class="flex items-center gap-3">
+              <span class="hero-user-circle-solid w-5 h-5 shrink-0" />
+              <div class="flex flex-col min-w-0">
+                <span class="text-sm font-medium truncate">
+                  {account.user.name || account.user.email}
+                </span>
+                <span class="text-xs text-base-content/50 truncate">{account.user.email}</span>
+              </div>
+              <span class="badge badge-success badge-xs whitespace-nowrap ml-auto">Signed in</span>
+            </div>
+          </li>
+        <% else %>
+          <li>
+            <.link href={account.switch_url} class="flex items-center gap-3">
+              <span class="hero-user-circle w-5 h-5 opacity-60 shrink-0" />
+              <div class="flex flex-col min-w-0">
+                <span class="text-sm truncate">{account.user.name || account.user.email}</span>
+                <span class="text-xs text-base-content/50 truncate">{account.user.email}</span>
+              </div>
+            </.link>
+          </li>
+        <% end %>
+        <hr class="border-base-300 my-0.5" />
+      </:account>
+
+      <:add_account :let={url}>
+        <li>
+          <.link href={url} class="whitespace-nowrap">
+            <span class="hero-user-plus w-5 h-5 opacity-60" />
+            Add another account
+          </.link>
+        </li>
+      </:add_account>
+    </AshMultiAccount.Phoenix.Components.account_switcher>
     """
   end
 
