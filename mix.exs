@@ -10,6 +10,7 @@ defmodule AshMultiAccount.MixProject do
       app: :ash_multi_account,
       version: @version,
       elixir: "~> 1.17",
+      elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
       consolidate_protocols: Mix.env() != :test,
       deps: deps(),
@@ -25,6 +26,9 @@ defmodule AshMultiAccount.MixProject do
     ]
   end
 
+  defp elixirc_paths(:test), do: ["lib", "test/support"]
+  defp elixirc_paths(_), do: ["lib"]
+
   def application do
     [
       extra_applications: [:logger]
@@ -35,12 +39,12 @@ defmodule AshMultiAccount.MixProject do
     [
       # Core Ash
       {:ash, "~> 3.0"},
-      {:ash_authentication, "~> 4.0"},
       {:spark, "~> 2.0"},
 
-      # Phoenix
-      {:phoenix, "~> 1.7"},
-      {:phoenix_live_view, "~> 1.0"},
+      # Optional — needed for Phase 3 (Phoenix integration)
+      {:ash_authentication, "~> 4.0", optional: true},
+      {:phoenix, "~> 1.7", optional: true},
+      {:phoenix_live_view, "~> 1.0", optional: true},
 
       # Dev/test
       {:sourceror, "~> 1.7", only: [:dev, :test], runtime: false},
