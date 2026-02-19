@@ -62,6 +62,56 @@ jobs:
       - name: Run tests
         run: mix test
 
+  demo:
+    name: Demo app
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: demo_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: erlef/setup-beam@v1
+        with:
+          elixir-version: "1.19"
+          otp-version: "27"
+
+      - name: Restore demo dependencies cache
+        uses: actions/cache@v4
+        with:
+          path: example/demo/deps
+          key: ${{ runner.os }}-demo-mix-${{ hashFiles('example/demo/mix.lock') }}
+          restore-keys: ${{ runner.os }}-demo-mix-
+
+      - name: Install demo dependencies
+        working-directory: example/demo
+        run: mix deps.get
+
+      - name: Compile demo (warnings as errors)
+        working-directory: example/demo
+        run: mix compile --warnings-as-errors
+
+      - name: Check demo formatting
+        working-directory: example/demo
+        run: mix format --check-formatted
+
+      - name: Run demo tests
+        working-directory: example/demo
+        run: mix test
+
   dialyzer:
     name: Dialyzer
     runs-on: ubuntu-latest

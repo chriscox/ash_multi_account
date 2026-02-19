@@ -35,7 +35,7 @@ defmodule AshMultiAccount do
   The extension adds to your User resource:
 
   - **Calculation** `:linked_accounts` — resolves linked account records for a given `session_token` argument
-  - **Action** `:get_user_with_linked_accounts` — a `get?` read action that filters by `primary_user_id`, loads the configured `display_fields`, and loads the `linked_accounts` calculation for the given session
+  - **Action** `:get_user_with_linked_accounts` — a `get?` read action that accepts `primary_user_id` and `session_token` arguments, looks up the user by `id`, loads the configured `display_fields`, and loads the `linked_accounts` calculation for the given session
 
   ## Companion Resource
 

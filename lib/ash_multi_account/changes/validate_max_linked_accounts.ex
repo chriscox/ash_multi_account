@@ -3,16 +3,17 @@ defmodule AshMultiAccount.Changes.ValidateMaxLinkedAccounts do
   Change that enforces the `max_linked_accounts` limit configured on the
   User resource.
 
-  Applied as a before-action hook on the `create_linked_account` action.
-  Before the linked account is created, it counts existing active links for
-  the same primary_user and session_token. If creating the record would
-  exceed the configured maximum, the action is prevented with an error.
+  Registered as a change on the `create_linked_account` action. Installs a
+  before-action hook that counts existing active links for the same
+  primary_user and session_token. If creating the record would exceed the
+  configured maximum, the action is prevented with an error.
   """
 
   use Ash.Resource.Change
   import Ash.Expr, only: [ref: 1]
   import AshMultiAccount.Helpers, only: [fetch_config!: 2]
   require Ash.Query
+  require Logger
 
   @impl true
   def change(changeset, _opts, context) do
@@ -35,7 +36,12 @@ defmodule AshMultiAccount.Changes.ValidateMaxLinkedAccounts do
       session_token = Ash.Changeset.get_attribute(changeset, config.session_token_attr)
 
       if is_nil(primary_user_id) or is_nil(session_token) do
-        # Can't validate without these values; let downstream validations handle it
+        Logger.warning(
+          "AshMultiAccount: Skipping max linked accounts validation — " <>
+            "primary_user_id: #{inspect(primary_user_id)}, " <>
+            "session_token present: #{not is_nil(session_token)}"
+        )
+
         changeset
       else
         query =

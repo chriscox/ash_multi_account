@@ -8,12 +8,20 @@ defmodule AshMultiAccount.Phoenix.Session do
 
   ## Session Keys
 
-  - `"user"` — AshAuthentication subject string, format `"<short_name>?id=<UUID>"`
+  - `"user"` — AshAuthentication subject string, format `"<short_name>?id=<UUID>"`.
+    Both read (on mount/hook) and written (during account switches via `put_user_id/3`).
+    Writing to this key is how account switching works at the session level.
   - `"primary_user_id"` — UUID of the primary account owner
   - `"session_token"` — UUID tying linked accounts to a browser session
   """
 
   import Plug.Conn, only: [get_session: 2, put_session: 3, delete_session: 2]
+
+  require Logger
+
+  @user_key "user"
+  @primary_user_id_key "primary_user_id"
+  @session_token_key "session_token"
 
   @type conn_or_session :: Plug.Conn.t() | %{optional(String.t()) => term()}
 
@@ -29,11 +37,11 @@ defmodule AshMultiAccount.Phoenix.Session do
   """
   @spec get_user_id(conn_or_session()) :: String.t() | nil
   def get_user_id(%Plug.Conn{} = conn) do
-    conn |> get_session("user") |> parse_user_subject()
+    conn |> get_session(@user_key) |> parse_user_subject()
   end
 
   def get_user_id(%{} = session) do
-    session |> Map.get("user") |> parse_user_subject()
+    session |> Map.get(@user_key) |> parse_user_subject()
   end
 
   @doc """
@@ -48,7 +56,7 @@ defmodule AshMultiAccount.Phoenix.Session do
   """
   @spec put_user_id(Plug.Conn.t(), String.t(), String.t()) :: Plug.Conn.t()
   def put_user_id(%Plug.Conn{} = conn, user_id, short_name \\ "user") do
-    put_session(conn, "user", "#{short_name}?id=#{user_id}")
+    put_session(conn, @user_key, "#{short_name}?id=#{user_id}")
   end
 
   @doc """
@@ -58,11 +66,11 @@ defmodule AshMultiAccount.Phoenix.Session do
   """
   @spec get_primary_user_id(conn_or_session()) :: String.t() | nil
   def get_primary_user_id(%Plug.Conn{} = conn) do
-    get_session(conn, "primary_user_id")
+    get_session(conn, @primary_user_id_key)
   end
 
   def get_primary_user_id(%{} = session) do
-    Map.get(session, "primary_user_id")
+    Map.get(session, @primary_user_id_key)
   end
 
   @doc """
@@ -70,7 +78,7 @@ defmodule AshMultiAccount.Phoenix.Session do
   """
   @spec put_primary_user_id(Plug.Conn.t(), String.t()) :: Plug.Conn.t()
   def put_primary_user_id(%Plug.Conn{} = conn, user_id) do
-    put_session(conn, "primary_user_id", user_id)
+    put_session(conn, @primary_user_id_key, user_id)
   end
 
   @doc """
@@ -80,11 +88,11 @@ defmodule AshMultiAccount.Phoenix.Session do
   """
   @spec get_session_token(conn_or_session()) :: String.t() | nil
   def get_session_token(%Plug.Conn{} = conn) do
-    get_session(conn, "session_token")
+    get_session(conn, @session_token_key)
   end
 
   def get_session_token(%{} = session) do
-    Map.get(session, "session_token")
+    Map.get(session, @session_token_key)
   end
 
   @doc """
@@ -92,7 +100,7 @@ defmodule AshMultiAccount.Phoenix.Session do
   """
   @spec put_session_token(Plug.Conn.t(), String.t()) :: Plug.Conn.t()
   def put_session_token(%Plug.Conn{} = conn, token) do
-    put_session(conn, "session_token", token)
+    put_session(conn, @session_token_key, token)
   end
 
   @doc """
@@ -128,8 +136,8 @@ defmodule AshMultiAccount.Phoenix.Session do
   @spec clear_multi_account_session(Plug.Conn.t()) :: Plug.Conn.t()
   def clear_multi_account_session(%Plug.Conn{} = conn) do
     conn
-    |> delete_session("primary_user_id")
-    |> delete_session("session_token")
+    |> delete_session(@primary_user_id_key)
+    |> delete_session(@session_token_key)
   end
 
   defp parse_user_subject(nil), do: nil
@@ -137,13 +145,16 @@ defmodule AshMultiAccount.Phoenix.Session do
 
   defp parse_user_subject(subject) when is_binary(subject) do
     case String.split(subject, "?id=", parts: 2) do
-      [_short_name, id] when id != "" -> id
-      _ -> nil
+      [_short_name, id] when id != "" ->
+        id
+
+      _ ->
+        Logger.warning("AshMultiAccount: Malformed session user subject: #{inspect(subject)}")
+        nil
     end
   end
 
   defp parse_user_subject(other) do
-    require Logger
     Logger.warning("AshMultiAccount: Unexpected session user subject: #{inspect(other)}")
     nil
   end

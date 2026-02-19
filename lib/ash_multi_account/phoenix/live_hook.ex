@@ -99,7 +99,14 @@ defmodule AshMultiAccount.Phoenix.LiveHook do
 
       {:error, error} ->
         Logger.error("Failed to load primary user with linked accounts: #{inspect(error)}")
-        {:cont, assign_no_user(socket)}
+
+        {:halt,
+         socket
+         |> Phoenix.LiveView.put_flash(
+           :error,
+           "Something went wrong loading your account. Please try again."
+         )
+         |> Phoenix.LiveView.redirect(to: "/sign-out")}
     end
   end
 
@@ -154,8 +161,7 @@ defmodule AshMultiAccount.Phoenix.LiveHook do
         nil
 
       {:error, error} ->
-        Logger.error("Failed to load user #{user_id} from session: #{inspect(error)}")
-        nil
+        raise "AshMultiAccount: Failed to load user #{user_id}: #{inspect(error)}"
     end
   end
 

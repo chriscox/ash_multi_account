@@ -25,3 +25,6 @@ ash_multi_account-*.tar
 # Dialyzer PLT files
 /priv/plts/
 
+# Claude Code local settings
+.claude/
+

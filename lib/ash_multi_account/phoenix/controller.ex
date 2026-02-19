@@ -137,8 +137,7 @@ defmodule AshMultiAccount.Phoenix.Controller do
             nil
 
           {:error, error} ->
-            Logger.error("Failed to load user #{user_id}: #{inspect(error)}")
-            nil
+            raise "AshMultiAccount: Failed to load user #{user_id}: #{inspect(error)}"
         end
       end
 
@@ -223,11 +222,9 @@ defmodule AshMultiAccount.Phoenix.Controller do
 
       defp identity_error?(%Ash.Error.Invalid{errors: errors}) do
         Enum.any?(errors, fn
-          %Ash.Error.Changes.InvalidChanges{fields: fields} when is_list(fields) ->
-            fields != []
-
-          %Ash.Error.Changes.InvalidAttribute{} ->
-            true
+          %Ash.Error.Changes.InvalidChanges{message: message}
+          when is_binary(message) ->
+            String.contains?(message, "has already been taken")
 
           _ ->
             false

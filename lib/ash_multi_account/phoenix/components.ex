@@ -55,6 +55,14 @@ defmodule AshMultiAccount.Phoenix.Components do
 
   require Logger
 
+  @typedoc "Data passed to each `:account` slot via `:let`."
+  @type account_entry :: %{
+          user: Ash.Resource.record(),
+          current?: boolean(),
+          primary?: boolean(),
+          switch_url: String.t()
+        }
+
   attr :current_user, :map, required: true
   attr :primary_user, :map, default: nil
   attr :switch_path, :string, default: "/link/switch_to"
@@ -116,18 +124,28 @@ defmodule AshMultiAccount.Phoenix.Components do
     [primary_entry | linked_entries]
   end
 
-  defp require_linked_user!(%{linked_user: %Ash.NotLoaded{}}) do
-    raise ArgumentError,
-          "AshMultiAccount: :linked_user relationship not loaded on linked account. " <>
-            "Ensure linked accounts are loaded with the :linked_user relationship."
+  defp require_linked_user!(account) do
+    rel_name = linked_user_relationship_name(account)
+
+    case Map.get(account, rel_name) do
+      %Ash.NotLoaded{} ->
+        raise ArgumentError,
+              "AshMultiAccount: #{inspect(rel_name)} relationship not loaded on linked account. " <>
+                "Ensure linked accounts are loaded with the #{inspect(rel_name)} relationship."
+
+      nil ->
+        raise ArgumentError,
+              "AshMultiAccount: #{inspect(rel_name)} is nil on linked account #{inspect(account.id)}."
+
+      user ->
+        user
+    end
   end
 
-  defp require_linked_user!(%{linked_user: nil, id: id}) do
-    raise ArgumentError,
-          "AshMultiAccount: :linked_user is nil on linked account #{inspect(id)}."
+  defp linked_user_relationship_name(account) do
+    config = AshMultiAccount.Helpers.linked_account_config!(account.__struct__)
+    config.linked_user_rel
   end
-
-  defp require_linked_user!(%{linked_user: user}), do: user
 
   defp linked_accounts_calculation_name(user) do
     AshMultiAccount.Helpers.fetch_config!(
@@ -141,25 +159,19 @@ defmodule AshMultiAccount.Phoenix.Components do
   defp get_linked_accounts(primary_user, calc_name) do
     case Map.fetch(primary_user, calc_name) do
       {:ok, %Ash.NotLoaded{}} ->
-        Logger.error(
-          "AshMultiAccount: Calculation #{inspect(calc_name)} is present but not loaded " <>
-            "on primary user. Ensure the user is loaded via the " <>
-            "get_user_with_linked_accounts action."
-        )
-
-        []
+        raise ArgumentError,
+              "AshMultiAccount: Calculation #{inspect(calc_name)} is present but not loaded " <>
+                "on primary user. Ensure the user is loaded via the " <>
+                "get_user_with_linked_accounts action."
 
       {:ok, accounts} ->
         accounts
 
       :error ->
-        Logger.error(
-          "AshMultiAccount: Calculation #{inspect(calc_name)} not found on primary user struct. " <>
-            "Ensure the user resource has the AshMultiAccount extension applied and " <>
-            "the user is loaded via the get_user_with_linked_accounts action."
-        )
-
-        []
+        raise ArgumentError,
+              "AshMultiAccount: Calculation #{inspect(calc_name)} not found on primary user struct. " <>
+                "Ensure the user resource has the AshMultiAccount extension applied and " <>
+                "the user is loaded via the get_user_with_linked_accounts action."
     end
   end
 end

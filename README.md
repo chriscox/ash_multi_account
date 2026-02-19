@@ -65,7 +65,44 @@ defmodule MyApp.Accounts.LinkedAccount do
 end
 ```
 
-### 3. Add routes and controller
+### 3. Wire up the auth controller
+
+Your AshAuthentication auth controller needs one addition — call
+`AshMultiAccount.Phoenix.Session.put_user_id/3` in the success callback.
+This is required because AshAuthentication stores a JWT token in the session,
+while the multi-account LiveView hook needs a plain user ID to resolve the
+current user after account switches. The third argument is the resource's
+`short_name` and defaults to `"user"`:
+
+```elixir
+# lib/my_app_web/controllers/auth_controller.ex
+defmodule MyAppWeb.AuthController do
+  use MyAppWeb, :controller
+  use AshAuthentication.Phoenix.Controller
+
+  def success(conn, _activity, user, _token) do
+    conn
+    |> store_in_session(user)
+    |> AshMultiAccount.Phoenix.Session.put_user_id(user.id)
+    |> assign(:current_user, user)
+    |> redirect(to: ~p"/")
+  end
+
+  def failure(conn, _activity, _reason) do
+    conn
+    |> put_flash(:error, "Incorrect email or password")
+    |> redirect(to: ~p"/sign-in")
+  end
+
+  def sign_out(conn, _params) do
+    conn
+    |> clear_session(:my_app)
+    |> redirect(to: ~p"/sign-in")
+  end
+end
+```
+
+### 4. Add routes and controller
 
 ```elixir
 # lib/my_app_web/router.ex
@@ -73,8 +110,13 @@ defmodule MyAppWeb.Router do
   use MyAppWeb, :router
   use AshMultiAccount.Phoenix.Router
 
+  pipeline :browser do
+    # ... existing plugs ...
+    plug AshMultiAccount.Phoenix.Plug
+  end
+
   scope "/", MyAppWeb do
-    pipe_through [:browser, AshMultiAccount.Phoenix.Plug]
+    pipe_through :browser
     multi_account_routes MultiAccountController, MyApp.Accounts.User
   end
 end
@@ -93,7 +135,7 @@ defmodule MyAppWeb.MultiAccountController do
 end
 ```
 
-### 4. Add LiveView hook
+### 5. Add LiveView hook
 
 ```elixir
 live_session :authenticated,
@@ -104,7 +146,7 @@ live_session :authenticated,
 end
 ```
 
-### 5. Use the account switcher component
+### 6. Use the account switcher component
 
 ```elixir
 <AshMultiAccount.Phoenix.Components.account_switcher
@@ -122,6 +164,35 @@ end
   </:add_account>
 </AshMultiAccount.Phoenix.Components.account_switcher>
 ```
+
+## Example App
+
+A complete demo Phoenix app lives in [`example/demo/`](example/demo/). It exercises every integration point — auth, linking, switching, the account switcher component, and the LiveView hook — against a real Postgres database.
+
+### Quick start
+
+```bash
+cd example/demo
+mix setup                  # deps, db create/migrate/seed, assets
+mix phx.server             # http://localhost:4000
+```
+
+Two seed users are created automatically:
+
+| Email | Password |
+|-------|----------|
+| alice@example.com | password123! |
+| bob@example.com | password123! |
+
+### What to try
+
+1. Sign in as Alice — single-account mode, account switcher shows one entry
+2. Click **"+ Add another account"** — redirects to sign-in
+3. Sign in as Bob — Bob is linked to Alice's session, both appear in the switcher
+4. Click **Switch** next to Alice — session switches without re-authenticating
+5. Sign out and sign in fresh — links are session-scoped, so you're back to single-account mode
+
+The demo app is tested in CI alongside the core library to catch integration regressions.
 
 ## Installation
 

@@ -33,9 +33,28 @@ defmodule AshMultiAccount.Verifier do
              linked_account_resource,
              AshMultiAccount.LinkedAccount
            ),
+         :ok <- validate_mutual_reference(dsl_state, linked_account_resource),
          :ok <- validate_display_fields(dsl_state),
          :ok <- validate_active_check(dsl_state) do
       :ok
+    end
+  end
+
+  defp validate_mutual_reference(dsl_state, linked_account_resource) do
+    current_module = Transformer.get_persisted(dsl_state, :module)
+
+    case AshMultiAccount.LinkedAccount.Info.multi_account_user_resource(linked_account_resource) do
+      {:ok, ^current_module} ->
+        :ok
+
+      {:ok, other_resource} ->
+        {:error,
+         "linked_account_resource #{inspect(linked_account_resource)} has " <>
+           "user_resource set to #{inspect(other_resource)}, but expected " <>
+           "#{inspect(current_module)}. Ensure both resources reference each other."}
+
+      _ ->
+        :ok
     end
   end
 
