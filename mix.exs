@@ -20,7 +20,8 @@ defmodule AshMultiAccount.MixProject do
       description: @description,
       source_url: @source_url,
       homepage_url: @source_url,
-      dialyzer: [plt_add_apps: [:mix]]
+      dialyzer: [plt_add_apps: [:mix]],
+      usage_rules: usage_rules()
     ]
   end
 
@@ -45,7 +46,9 @@ defmodule AshMultiAccount.MixProject do
       {:sourceror, "~> 1.7", only: [:dev, :test], runtime: false},
       {:ex_doc, "~> 0.34", only: [:dev, :test], runtime: false},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
-      {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false}
+      {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
+      {:igniter, "~> 0.6", only: [:dev], runtime: false},
+      {:usage_rules, "~> 1.1", only: [:dev], runtime: false}
     ]
   end
 
@@ -65,7 +68,28 @@ defmodule AshMultiAccount.MixProject do
       name: "ash_multi_account",
       licenses: ["MIT"],
       links: %{"GitHub" => @source_url},
-      files: ~w(lib .formatter.exs mix.exs README.md LICENSE CHANGELOG.md)
+      files: ~w(lib .formatter.exs mix.exs README.md LICENSE CHANGELOG.md usage-rules.md)
+    ]
+  end
+
+  defp usage_rules do
+    [
+      file: "CLAUDE.md",
+      skills: [
+        location: ".claude/skills",
+        build: [
+          "ash-framework": [
+            description:
+              "Use this skill working with Ash Framework or any of its extensions. Always consult this when making any domain changes, features or fixes.",
+            usage_rules: [:ash, ~r/^ash_/]
+          ],
+          "phoenix-framework": [
+            description:
+              "Use this skill working with Phoenix Framework. Consult this when working with the web layer, controllers, views, liveviews etc.",
+            usage_rules: [:phoenix, ~r/^phoenix_/]
+          ]
+        ]
+      ]
     ]
   end
 
