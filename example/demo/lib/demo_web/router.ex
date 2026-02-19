@@ -24,6 +24,7 @@ defmodule DemoWeb.Router do
       auth_routes_prefix: "/auth",
       overrides: [DemoWeb.AuthOverrides, AshAuthentication.Phoenix.Overrides.DaisyUI]
     )
+
     auth_routes(AuthController, Demo.Accounts.User)
 
     # Sign out (manual route)

@@ -3,24 +3,24 @@ defmodule DemoWeb.AuthOverrides do
   use AshAuthentication.Phoenix.Overrides
 
   override AshAuthentication.Phoenix.SignInLive do
-    set :root_class, "grid min-h-screen place-items-center bg-base-200 py-12 px-4"
+    set(:root_class, "grid min-h-screen place-items-center bg-base-200 py-12 px-4")
   end
 
   override AshAuthentication.Phoenix.Components.SignIn do
-    set :root_class, "w-full max-w-md mx-auto card bg-base-100 shadow-sm p-8"
-    set :strategy_class, "w-full"
-    set :show_banner, true
+    set(:root_class, "w-full max-w-md mx-auto card bg-base-100 shadow-sm p-8")
+    set(:strategy_class, "w-full")
+    set(:show_banner, true)
   end
 
   override AshAuthentication.Phoenix.Components.Banner do
-    set :text, "AshMultiAccount Demo"
-    set :text_class, "text-2xl font-bold text-center mb-4"
-    set :image_url, nil
-    set :root_class, ""
+    set(:text, "AshMultiAccount Demo")
+    set(:text_class, "text-2xl font-bold text-center mb-4")
+    set(:image_url, nil)
+    set(:root_class, "")
   end
 
   override AshAuthentication.Phoenix.Components.Password do
-    set :register_extra_component, &DemoWeb.AuthOverrides.register_name_field/1
+    set(:register_extra_component, &DemoWeb.AuthOverrides.register_name_field/1)
   end
 
   use Phoenix.Component

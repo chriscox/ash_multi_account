@@ -29,8 +29,7 @@ defmodule DemoWeb.HomeLive do
               <hr class="border-base-300 my-0.5" />
               <li>
                 <.link href={~p"/sign-out"} class="text-error">
-                  <span class="hero-arrow-right-on-rectangle-solid w-5 h-5" />
-                  Sign out
+                  <span class="hero-arrow-right-on-rectangle-solid w-5 h-5" /> Sign out
                 </.link>
               </li>
             </ul>
@@ -83,8 +82,8 @@ defmodule DemoWeb.HomeLive do
               <div class="flex items-start gap-2 text-base-content/50">
                 <span class="hero-information-circle w-5 h-5 mt-0.5 shrink-0" />
                 <p class="text-sm">
-                  Single-account mode. Link another account using
-                  <strong>Add another account</strong> in the user menu to enable switching.
+                  Single-account mode. Link another account using <strong>Add another account</strong>
+                  in the user menu to enable switching.
                 </p>
               </div>
             <% end %>
@@ -113,7 +112,8 @@ defmodule DemoWeb.HomeLive do
             <h2 class="card-title">Welcome to AshMultiAccount</h2>
             <p class="text-base-content/60 mb-2">
               This demo shows multi-account linking and switching powered by the
-              <code class="text-sm">ash_multi_account</code> library.
+              <code class="text-sm">ash_multi_account</code>
+              library.
             </p>
             <p class="text-base-content/60 mb-4">
               Register two accounts, then link and switch between them.
@@ -166,8 +166,7 @@ defmodule DemoWeb.HomeLive do
       <:add_account :let={url}>
         <li>
           <.link href={url} class="whitespace-nowrap">
-            <span class="hero-user-plus w-5 h-5 opacity-60" />
-            Add another account
+            <span class="hero-user-plus w-5 h-5 opacity-60" /> Add another account
           </.link>
         </li>
       </:add_account>

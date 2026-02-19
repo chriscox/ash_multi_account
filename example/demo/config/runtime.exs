@@ -22,11 +22,11 @@ end
 
 if config_env() == :prod do
   config :demo,
-    :token_signing_secret,
-    System.get_env("TOKEN_SIGNING_SECRET") ||
-      raise """
-      environment variable TOKEN_SIGNING_SECRET is missing.
-      """
+         :token_signing_secret,
+         System.get_env("TOKEN_SIGNING_SECRET") ||
+           raise("""
+           environment variable TOKEN_SIGNING_SECRET is missing.
+           """)
 
   database_url =
     System.get_env("DATABASE_URL") ||

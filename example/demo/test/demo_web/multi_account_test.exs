@@ -14,23 +14,21 @@ defmodule DemoWeb.MultiAccountTest do
       Demo.Accounts.User
       |> Ash.Changeset.for_create(:register_with_password, %{
         email: "alice-#{System.unique_integer([:positive])}@example.com",
+        name: "Alice",
         password: password,
         password_confirmation: password
       })
       |> Ash.create!()
-      |> Ash.Changeset.for_update(:update, %{name: "Alice"})
-      |> Ash.update!()
 
     bob =
       Demo.Accounts.User
       |> Ash.Changeset.for_create(:register_with_password, %{
         email: "bob-#{System.unique_integer([:positive])}@example.com",
+        name: "Bob",
         password: password,
         password_confirmation: password
       })
       |> Ash.create!()
-      |> Ash.Changeset.for_update(:update, %{name: "Bob"})
-      |> Ash.update!()
 
     %{alice: alice, bob: bob, password: password}
   end
@@ -38,7 +36,7 @@ defmodule DemoWeb.MultiAccountTest do
   describe "page loads" do
     test "home page loads when not signed in", %{conn: conn} do
       conn = get(conn, ~p"/")
-      assert html_response(conn, 200) =~ "Sign in or create an account"
+      assert html_response(conn, 200) =~ "Welcome to AshMultiAccount"
     end
 
     test "sign-in page loads", %{conn: conn} do
@@ -149,7 +147,7 @@ defmodule DemoWeb.MultiAccountTest do
         })
 
       conn = get(recycle(conn), ~p"/sign-out")
-      assert redirected_to(conn) == "/sign-in"
+      assert redirected_to(conn) == "/"
     end
   end
 end
