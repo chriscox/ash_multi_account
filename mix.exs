@@ -57,12 +57,24 @@ defmodule AshMultiAccount.MixProject do
   end
 
   defp aliases do
+    extensions = [
+      "AshMultiAccount",
+      "AshMultiAccount.LinkedAccount"
+    ]
+
     [
       ci: [
         "compile --warnings-as-errors",
         "format --check-formatted",
         "credo --strict",
         "test"
+      ],
+      "spark.formatter": "spark.formatter --extensions #{Enum.join(extensions, ",")}",
+      "spark.cheat_sheets": "spark.cheat_sheets --extensions #{Enum.join(extensions, ",")}",
+      docs: [
+        "spark.cheat_sheets",
+        "docs",
+        "spark.replace_doc_links"
       ]
     ]
   end
@@ -72,7 +84,8 @@ defmodule AshMultiAccount.MixProject do
       name: "ash_multi_account",
       licenses: ["MIT"],
       links: %{"GitHub" => @source_url},
-      files: ~w(lib .formatter.exs mix.exs README.md LICENSE CHANGELOG.md usage-rules.md)
+      files:
+        ~w(lib documentation .formatter.exs mix.exs README.md LICENSE CHANGELOG.md usage-rules.md)
     ]
   end
 
@@ -100,9 +113,81 @@ defmodule AshMultiAccount.MixProject do
   defp docs do
     [
       main: "readme",
-      extras: ["README.md", "CHANGELOG.md"],
       source_ref: "v#{@version}",
-      source_url: @source_url
+      source_url: @source_url,
+      extra_section: "GUIDES",
+      extras: extras(),
+      groups_for_extras: groups_for_extras(),
+      groups_for_modules: groups_for_modules()
+    ]
+  end
+
+  defp extras do
+    [
+      {"README.md", name: "Home"},
+      "CHANGELOG.md",
+      "documentation/tutorials/getting-started.md",
+      "documentation/topics/how-it-works.md",
+      "documentation/topics/phoenix-integration.md",
+      "documentation/topics/testing.md",
+      "documentation/topics/customizing-the-account-switcher.md"
+    ] ++ dsl_extras()
+  end
+
+  defp dsl_extras do
+    if Code.ensure_loaded?(Spark.Docs) do
+      [
+        {"documentation/dsls/DSL-AshMultiAccount.md",
+         search_data: Spark.Docs.search_data_for(AshMultiAccount)},
+        {"documentation/dsls/DSL-AshMultiAccount.LinkedAccount.md",
+         search_data: Spark.Docs.search_data_for(AshMultiAccount.LinkedAccount)}
+      ]
+    else
+      [
+        "documentation/dsls/DSL-AshMultiAccount.md",
+        "documentation/dsls/DSL-AshMultiAccount.LinkedAccount.md"
+      ]
+    end
+  end
+
+  defp groups_for_extras do
+    [
+      Tutorials: ~r"documentation/tutorials",
+      Topics: ~r"documentation/topics",
+      Reference: ~r"documentation/dsls"
+    ]
+  end
+
+  defp groups_for_modules do
+    [
+      Extensions: [
+        AshMultiAccount,
+        AshMultiAccount.LinkedAccount
+      ],
+      "DSL & Introspection": [
+        AshMultiAccount.Info,
+        AshMultiAccount.LinkedAccount.Info
+      ],
+      "Phoenix Integration": [
+        AshMultiAccount.Phoenix.Plug,
+        AshMultiAccount.Phoenix.Router,
+        AshMultiAccount.Phoenix.Controller,
+        AshMultiAccount.Phoenix.Session,
+        AshMultiAccount.Phoenix.LiveHook,
+        AshMultiAccount.Phoenix.Components
+      ],
+      "Changes & Preparations": [
+        AshMultiAccount.Changes.ValidateNotSelfLinked,
+        AshMultiAccount.Changes.ValidateMaxLinkedAccounts,
+        AshMultiAccount.Preparations.FilterLinkedAccounts,
+        AshMultiAccount.Preparations.LoadLinkedUsers,
+        AshMultiAccount.Preparations.LoadLinkedAccounts
+      ],
+      Calculations: [
+        AshMultiAccount.Calculations.IsActive,
+        AshMultiAccount.Calculations.LinkedAccountSessions
+      ],
+      Internals: ~r/.*/
     ]
   end
 end

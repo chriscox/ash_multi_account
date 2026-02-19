@@ -13,21 +13,14 @@ defmodule AshMultiAccount.Dsl do
       ],
       active_check: [
         type: {:tuple, [:atom, :any]},
-        doc: """
-        A `{field, value}` tuple used to check if a linked user is "active".
-        When set, the `get_linked_accounts` query will filter to only include
-        linked users where the given field equals the given value.
-        For example: `{:status, :active}` or `{:status_id, :active}`.
-        """,
+        doc:
+          "A `{field, value}` tuple used to filter linked users by an \"active\" status, e.g. `{:status, :active}`.",
         required: false
       ],
       display_fields: [
         type: {:list, :atom},
-        doc: """
-        Fields to load on the primary_user and linked_user when fetching
-        linked accounts. These are typically the fields needed for a
-        user switcher UI (e.g., `[:name, :email, :avatar_url]`).
-        """,
+        doc:
+          "Fields to load on users when fetching linked accounts for the switcher UI, e.g. `[:name, :email, :avatar_url]`.",
         default: []
       ],
       max_linked_accounts: [
