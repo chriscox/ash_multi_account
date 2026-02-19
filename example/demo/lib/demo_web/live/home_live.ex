@@ -7,7 +7,7 @@ defmodule DemoWeb.HomeLive do
     <div class="bg-base-100 shadow-sm">
       <div class="navbar max-w-2xl mx-auto px-4">
         <div class="flex-1">
-          <a href="/" class="text-lg font-semibold">AshMultiAccount Demo</a>
+          <a href="/" class="text-lg font-semibold">Ash Multi Account Demo</a>
         </div>
         <div :if={@current_user} class="flex-none">
           <div class="dropdown dropdown-end">
@@ -109,7 +109,7 @@ defmodule DemoWeb.HomeLive do
       <% else %>
         <div class="card bg-base-100 shadow-sm">
           <div class="card-body items-center text-center">
-            <h2 class="card-title">Welcome to AshMultiAccount</h2>
+            <h2 class="card-title">Welcome to Ash Multi Account</h2>
             <p class="text-base-content/60 mb-2">
               This demo shows multi-account linking and switching powered by the
               <code class="text-sm">ash_multi_account</code>

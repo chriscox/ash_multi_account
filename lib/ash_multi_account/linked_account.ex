@@ -16,19 +16,17 @@ defmodule AshMultiAccount.LinkedAccount do
   defmodule MyApp.Accounts.LinkedAccount do
     use Ash.Resource,
       domain: MyApp.Accounts,
-      data_layer: AshPostgres.DataLayer,
+      data_layer: ...,  # any Ash data layer (AshPostgres, AshSqlite, ETS, etc.)
       extensions: [AshMultiAccount.LinkedAccount]
 
     multi_account do
       user_resource MyApp.Accounts.User
     end
-
-    postgres do
-      table "linked_accounts"
-      repo MyApp.Repo
-    end
   end
   ```
+
+  If using a database-backed data layer, add the appropriate data layer config
+  (e.g. `postgres do ... end` for AshPostgres).
 
   ## Generated Schema
 

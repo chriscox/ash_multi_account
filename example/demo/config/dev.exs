@@ -2,16 +2,6 @@ import Config
 
 config :demo, :token_signing_secret, "dev-only-signing-secret-at-least-32-bytes-long!!"
 
-# Configure your database
-config :demo, Demo.Repo,
-  username: "postgres",
-  password: "postgres",
-  hostname: "localhost",
-  database: "demo_dev",
-  stacktrace: true,
-  show_sensitive_data_on_connection_error: true,
-  pool_size: 10
-
 # For development, we disable any cache and enable
 # debugging and code reloading.
 #

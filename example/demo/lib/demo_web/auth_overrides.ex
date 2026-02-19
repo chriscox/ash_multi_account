@@ -13,7 +13,7 @@ defmodule DemoWeb.AuthOverrides do
   end
 
   override AshAuthentication.Phoenix.Components.Banner do
-    set(:text, "AshMultiAccount Demo")
+    set(:text, "Ash Multi Account Demo")
     set(:text_class, "text-2xl font-bold text-center mb-4")
     set(:image_url, nil)
     set(:root_class, "")
@@ -21,6 +21,11 @@ defmodule DemoWeb.AuthOverrides do
 
   override AshAuthentication.Phoenix.Components.Password do
     set(:register_extra_component, &DemoWeb.AuthOverrides.register_name_field/1)
+
+    set(
+      :toggler_class,
+      "flex-none text-orange-500 hover:text-orange-600 px-2 first:pl-0 last:pr-0"
+    )
   end
 
   use Phoenix.Component

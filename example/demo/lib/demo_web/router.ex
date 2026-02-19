@@ -36,6 +36,7 @@ defmodule DemoWeb.Router do
     # Main app routes with multi-account LiveView hook
     live_session :authenticated,
       on_mount: [
+        {AshAuthentication.Phoenix.LiveSession, :load_from_session},
         {AshMultiAccount.Phoenix.LiveHook, {:load_multi_account, Demo.Accounts.User}}
       ] do
       live "/", HomeLive

@@ -1,8 +1,6 @@
 import Config
 
 config :demo,
-  ecto_repos: [Demo.Repo],
-  generators: [timestamp_type: :utc_datetime],
   ash_domains: [Demo.Accounts]
 
 config :demo, DemoWeb.Endpoint,

@@ -1,4 +1,4 @@
-# AshMultiAccount
+# Ash Multi Account
 
 [![CI](https://github.com/chriscox/ash_multi_account/actions/workflows/ci.yml/badge.svg)](https://github.com/chriscox/ash_multi_account/actions/workflows/ci.yml)
 
@@ -28,15 +28,15 @@ There's nothing like this in the Ash ecosystem today.
 - Router macros for link/switch routes
 - Session token plug for automatic token management
 
-## Requirements
+## Built On
 
-| Dependency | Version |
-|------------|---------|
-| Elixir | >= 1.17 |
-| Ash | ~> 3.0 |
-| AshAuthentication | ~> 4.0 |
-| Phoenix | ~> 1.7 |
-| Phoenix LiveView | ~> 1.0 |
+Ash Multi Account is an extension for the [Ash Framework](https://ash-hq.org/) ecosystem. It builds on:
+
+- **[Ash](https://hexdocs.pm/ash)** — resources, actions, and the DSL extension system (Spark)
+- **[AshAuthentication](https://hexdocs.pm/ash_authentication)** — user authentication and session management
+- **[Phoenix](https://hexdocs.pm/phoenix)** / **[Phoenix LiveView](https://hexdocs.pm/phoenix_live_view)** — controller mixin, LiveView hook, router macros, and the account switcher component
+
+Works with **any Ash data layer** (Postgres, SQLite, ETS, etc.) and **any AshAuthentication strategy** (password, OAuth, magic links, etc.).
 
 ## Quick Look
 
@@ -78,8 +78,11 @@ multi_account_routes MultiAccountController, MyApp.Accounts.User
 # Controller
 use AshMultiAccount.Phoenix.Controller, user_resource: MyApp.Accounts.User
 
-# LiveView hook
-on_mount: [{AshMultiAccount.Phoenix.LiveHook, {:load_multi_account, MyApp.Accounts.User}}]
+# LiveView hook (must come after AshAuthentication's hook)
+on_mount: [
+  {AshAuthentication.Phoenix.LiveSession, :load_from_session},
+  {AshMultiAccount.Phoenix.LiveHook, {:load_multi_account, MyApp.Accounts.User}}
+]
 ```
 
 See the [Getting Started guide](documentation/tutorials/getting-started.md) for the full step-by-step walkthrough.
@@ -95,7 +98,7 @@ See the [Getting Started guide](documentation/tutorials/getting-started.md) for 
 
 ## Demo App
 
-A complete demo Phoenix app lives in `example/demo/`. It uses password authentication with Postgres and exercises every integration point — auth, linking, switching, the account switcher component, and the LiveView hook.
+A complete demo Phoenix app lives in `example/demo/`. It uses password authentication with ETS (no external dependencies — just `mix setup && mix phx.server`) and exercises every integration point — auth, linking, switching, the account switcher component, and the LiveView hook.
 
 See the [demo README](example/demo/README.md) for setup instructions and a walkthrough.
 

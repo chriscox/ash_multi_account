@@ -1,13 +1,8 @@
 defmodule Demo.Accounts.User do
   use Ash.Resource,
     domain: Demo.Accounts,
-    data_layer: AshPostgres.DataLayer,
+    data_layer: Ash.DataLayer.Ets,
     extensions: [AshAuthentication, AshMultiAccount]
-
-  postgres do
-    table "users"
-    repo Demo.Repo
-  end
 
   authentication do
     tokens do
@@ -68,6 +63,6 @@ defmodule Demo.Accounts.User do
   end
 
   identities do
-    identity :unique_email, [:email]
+    identity :unique_email, [:email], pre_check_with: Demo.Accounts
   end
 end

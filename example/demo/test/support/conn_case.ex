@@ -6,13 +6,6 @@ defmodule DemoWeb.ConnCase do
   Such tests rely on `Phoenix.ConnTest` and also
   import other functionality to make it easier
   to build common data structures and query the data layer.
-
-  Finally, if the test case interacts with the database,
-  we enable the SQL sandbox, so changes done to the database
-  are reverted at the end of every test. If you are using
-  PostgreSQL, you can even run database tests asynchronously
-  by setting `use DemoWeb.ConnCase, async: true`, although
-  this option is not recommended for other databases.
   """
 
   use ExUnit.CaseTemplate
@@ -31,8 +24,10 @@ defmodule DemoWeb.ConnCase do
     end
   end
 
-  setup tags do
-    Demo.DataCase.setup_sandbox(tags)
+  # ETS tables are shared (not private?) so the demo app works in both dev and
+  # test. Test isolation is achieved via unique email addresses
+  # (System.unique_integer) rather than per-process tables or sandboxing.
+  setup do
     {:ok, conn: Phoenix.ConnTest.build_conn()}
   end
 end

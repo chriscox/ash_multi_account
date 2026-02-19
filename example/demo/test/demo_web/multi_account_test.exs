@@ -1,7 +1,7 @@
 defmodule DemoWeb.MultiAccountTest do
   @moduledoc """
   Smoke tests for the demo app's multi-account integration.
-  Validates that the library works end-to-end with a real Postgres database.
+  Validates that the library works end-to-end with an ETS data layer.
   """
   use DemoWeb.ConnCase
 
@@ -36,7 +36,7 @@ defmodule DemoWeb.MultiAccountTest do
   describe "page loads" do
     test "home page loads when not signed in", %{conn: conn} do
       conn = get(conn, ~p"/")
-      assert html_response(conn, 200) =~ "Welcome to AshMultiAccount"
+      assert html_response(conn, 200) =~ "Welcome to Ash Multi Account"
     end
 
     test "sign-in page loads", %{conn: conn} do

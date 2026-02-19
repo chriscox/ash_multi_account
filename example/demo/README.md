@@ -1,4 +1,4 @@
-# AshMultiAccount Demo App
+# Ash Multi Account Demo App
 
 A complete Phoenix application demonstrating multi-account linking and switching using the `ash_multi_account` library.
 
@@ -17,17 +17,17 @@ The demo exercises every integration point:
 ## Stack
 
 - Phoenix 1.7 + LiveView 1.0
-- Ash 3.x + AshAuthentication 4.x + AshPostgres
-- Postgres database
+- Ash 3.x + AshAuthentication 4.x
+- ETS data layer (no external dependencies)
 - DaisyUI + Tailwind CSS for styling
+
+> **Note:** Data is stored in-memory via ETS and resets on server restart. This is by design — the demo is meant for exploring the library, not for production use.
 
 ## Setup
 
-Requires Postgres running locally.
-
 ```bash
 cd example/demo
-mix setup                  # install deps, create/migrate db, build assets
+mix setup                  # install deps, build assets
 mix phx.server             # start at http://localhost:4000
 ```
 

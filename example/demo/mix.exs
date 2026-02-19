@@ -29,9 +29,6 @@ defmodule Demo.MixProject do
     [
       # Phoenix
       {:phoenix, "~> 1.7"},
-      {:phoenix_ecto, "~> 4.5"},
-      {:ecto_sql, "~> 3.13"},
-      {:postgrex, ">= 0.0.0"},
       {:phoenix_html, "~> 4.1"},
       {:phoenix_live_reload, "~> 1.2", only: :dev},
       {:phoenix_live_view, "~> 1.0"},
@@ -52,7 +49,6 @@ defmodule Demo.MixProject do
 
       # Ash
       {:ash, "~> 3.0"},
-      {:ash_postgres, "~> 2.0"},
       {:ash_authentication, "~> 4.0"},
       {:ash_authentication_phoenix, "~> 2.0"},
 
@@ -63,10 +59,7 @@ defmodule Demo.MixProject do
 
   defp aliases do
     [
-      setup: ["deps.get", "ash.setup", "assets.setup", "assets.build"],
-      "ecto.setup": ["ecto.create", "ecto.migrate"],
-      "ecto.reset": ["ecto.drop", "ecto.setup"],
-      test: ["ecto.create --quiet", "ecto.migrate --quiet", "test"],
+      setup: ["deps.get", "assets.setup", "assets.build"],
       "assets.setup": ["tailwind.install --if-missing", "esbuild.install --if-missing"],
       "assets.build": ["tailwind demo", "esbuild demo"],
       "assets.deploy": [

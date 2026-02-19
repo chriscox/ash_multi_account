@@ -15,6 +15,10 @@ This guide walks you through adding multi-account linking and switching to an ex
 
 You need an existing Ash app with AshAuthentication configured and a User resource with at least one authentication strategy.
 
+### Data Layer
+
+AshMultiAccount is **data layer agnostic**. It works with any Ash data layer — AshPostgres, AshSqlite, ETS, or others. The library generates standard Ash resources with attributes, relationships, and actions that work on any data layer. Both the demo app and the library's own test suite use ETS.
+
 ### Authentication Strategy
 
 AshMultiAccount is **strategy-agnostic**. It works with any AshAuthentication strategy — password, OAuth2, magic links, API keys, or any combination. The library hooks into the session layer *after* authentication completes, so it doesn't care how the user originally signed in. The demo app uses password authentication for simplicity, but the same setup works with any strategy.
@@ -46,7 +50,7 @@ Add `AshMultiAccount` to your User resource's extensions and configure the `mult
 defmodule MyApp.Accounts.User do
   use Ash.Resource,
     domain: MyApp.Accounts,
-    data_layer: AshPostgres.DataLayer,
+    data_layer: ...,  # any Ash data layer (AshPostgres, AshSqlite, ETS, etc.)
     extensions: [AshAuthentication, AshMultiAccount]
 
   multi_account do
@@ -81,17 +85,19 @@ Create a new resource with the `AshMultiAccount.LinkedAccount` extension:
 defmodule MyApp.Accounts.LinkedAccount do
   use Ash.Resource,
     domain: MyApp.Accounts,
-    data_layer: AshPostgres.DataLayer,
+    data_layer: ...,  # any Ash data layer (AshPostgres, AshSqlite, ETS, etc.)
     extensions: [AshMultiAccount.LinkedAccount]
 
   multi_account do
     user_resource MyApp.Accounts.User
   end
 
-  postgres do
-    table "linked_accounts"
-    repo MyApp.Repo
-  end
+  # If using a database-backed data layer, add its config here.
+  # For example, with AshPostgres:
+  #   postgres do
+  #     table "linked_accounts"
+  #     repo MyApp.Repo
+  #   end
 end
 ```
 
@@ -102,12 +108,14 @@ The transformer generates the full schema automatically:
 - **Calculations**: `is_active?`
 - **Identity**: unique constraint on `{primary_user_id, linked_user_id, session_token}`
 
-Generate and run the migration:
+If using a database-backed data layer, generate and run the migration:
 
 ```bash
 mix ash.codegen create_linked_accounts
 mix ash.migrate
 ```
+
+> **Note:** In-memory data layers like ETS require no migration step.
 
 ## Step 3: Register in Your Domain
 

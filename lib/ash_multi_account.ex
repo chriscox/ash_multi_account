@@ -19,7 +19,7 @@ defmodule AshMultiAccount do
   defmodule MyApp.Accounts.User do
     use Ash.Resource,
       domain: MyApp.Accounts,
-      data_layer: AshPostgres.DataLayer,
+      data_layer: ...,  # any Ash data layer (AshPostgres, AshSqlite, ETS, etc.)
       extensions: [AshMultiAccount]
 
     multi_account do
