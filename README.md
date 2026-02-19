@@ -173,23 +173,16 @@ A complete demo Phoenix app lives in [`example/demo/`](example/demo/). It exerci
 
 ```bash
 cd example/demo
-mix setup                  # deps, db create/migrate/seed, assets
+mix setup                  # deps, db create/migrate, assets
 mix phx.server             # http://localhost:4000
 ```
 
-Two seed users are created automatically:
+Register a couple of users, then:
 
-| Email | Password |
-|-------|----------|
-| alice@example.com | password123! |
-| bob@example.com | password123! |
-
-### What to try
-
-1. Sign in as Alice — single-account mode, account switcher shows one entry
+1. Sign in — single-account mode, account switcher shows one entry
 2. Click **"+ Add another account"** — redirects to sign-in
-3. Sign in as Bob — Bob is linked to Alice's session, both appear in the switcher
-4. Click **Switch** next to Alice — session switches without re-authenticating
+3. Sign in as the second user — they're linked to the first user's session, both appear in the switcher
+4. Click **Switch** next to the first user — session switches without re-authenticating
 5. Sign out and sign in fresh — links are session-scoped, so you're back to single-account mode
 
 The demo app is tested in CI alongside the core library to catch integration regressions.
