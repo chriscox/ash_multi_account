@@ -53,8 +53,8 @@ mix phx.server             # start at http://localhost:4000
 | `lib/demo_web/controllers/multi_account_controller.ex` | Link/switch controller actions |
 | `lib/demo_web/router.ex` | Routes, plugs, and LiveView hook configuration |
 | `lib/demo_web/live/home_live.ex` | LiveView page — multi-account via `LiveHook` |
-| `lib/demo_web/controllers/dashboard_controller.ex` | Controller page — multi-account via `LoadMultiAccount` plug |
-| `lib/demo_web/controllers/dashboard_html/` | Controller page template with account switcher |
+| `lib/demo_web/controllers/page_controller.ex` | Controller page — multi-account via `LoadMultiAccount` plug |
+| `lib/demo_web/controllers/page_html/` | Controller page template with account switcher |
 
 ## Tests
 

@@ -219,7 +219,7 @@ live_session :authenticated,
     {AshAuthentication.Phoenix.LiveSession, :load_from_session},
     {AshMultiAccount.Phoenix.LiveHook, {:load_multi_account, MyApp.Accounts.User}}
   ] do
-  live "/", DashboardLive
+  live "/", HomeLive
   # ... more live routes
 end
 ```

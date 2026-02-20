@@ -35,7 +35,7 @@ defmodule DemoWeb.Router do
     multi_account_routes(MultiAccountController, Demo.Accounts.User)
 
     # Controller-rendered page with multi-account support via LoadMultiAccount plug
-    get "/controller", DashboardController, :show
+    get "/controller", PageController, :show
 
     # Main app routes with multi-account LiveView hook
     live_session :authenticated,

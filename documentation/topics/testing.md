@@ -375,7 +375,7 @@ defmodule MyApp.LiveHookTest do
     |> Ash.create!()
 
     {:ok, view, _html} =
-      live(build_conn(), "/dashboard",
+      live(build_conn(), "/",
         session: %{
           "user" => "user?id=#{bob.id}",
           "primary_user_id" => alice.id,
