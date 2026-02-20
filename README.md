@@ -41,12 +41,10 @@ Ash Multi Account is an extension for the [Ash Framework](https://ash-hq.org/) e
 - **[AshAuthentication](https://hexdocs.pm/ash_authentication)** — user authentication and session management
 - **[Phoenix](https://hexdocs.pm/phoenix)** — controller mixin, router macros, plugs, and session management
 
-This is all you need for **controller-only** setups using the `LoadMultiAccount` plug.
+**Also needed** (not pulled in transitively):
 
-**Also add these** if using LiveView:
-
-- **[AshAuthentication Phoenix](https://hexdocs.pm/ash_authentication_phoenix)** — provides `AshAuthentication.Phoenix.LiveSession` which the multi-account LiveView hook runs alongside, and the auth controller (`AshAuthentication.Phoenix.Controller`) that the installer auto-detects and patches
-- **[Phoenix LiveView](https://hexdocs.pm/phoenix_live_view)** — needed for the LiveView hook (`AshMultiAccount.Phoenix.LiveHook`) and the account switcher component (`AshMultiAccount.Phoenix.Components`)
+- **[AshAuthentication Phoenix](https://hexdocs.pm/ash_authentication_phoenix)** — provides the auth controller (`AshAuthentication.Phoenix.Controller`) used for sign-in callbacks, and `AshAuthentication.Phoenix.LiveSession` for LiveView apps. Most Phoenix + AshAuthentication apps already have this.
+- **[Phoenix LiveView](https://hexdocs.pm/phoenix_live_view)** — only needed if using the LiveView hook (`AshMultiAccount.Phoenix.LiveHook`) or account switcher component
 
 Works with **any Ash data layer** (Postgres, SQLite, ETS, etc.) and **any AshAuthentication strategy** (password, OAuth, magic links, etc.).
 
@@ -55,10 +53,10 @@ Works with **any Ash data layer** (Postgres, SQLite, ETS, etc.) and **any AshAut
 Add two extensions to your resources — the transformer generates the full schema:
 
 ```elixir
-# User resource
+# User resource — add AshMultiAccount alongside AshAuthentication
 defmodule MyApp.Accounts.User do
   use Ash.Resource,
-    extensions: [AshMultiAccount]
+    extensions: [AshAuthentication, AshMultiAccount]
 
   multi_account do
     linked_account_resource MyApp.Accounts.LinkedAccount
@@ -68,7 +66,7 @@ defmodule MyApp.Accounts.User do
   end
 end
 
-# LinkedAccount resource — schema generated automatically
+# LinkedAccount resource — attributes, relationships, and actions generated automatically
 defmodule MyApp.Accounts.LinkedAccount do
   use Ash.Resource,
     extensions: [AshMultiAccount.LinkedAccount]
@@ -79,30 +77,7 @@ defmodule MyApp.Accounts.LinkedAccount do
 end
 ```
 
-Then wire up the Phoenix integration:
-
-```elixir
-# Router pipeline
-plug AshMultiAccount.Phoenix.Plug
-plug AshMultiAccount.Phoenix.LoadMultiAccount, user_resource: MyApp.Accounts.User
-
-# Routes
-use AshMultiAccount.Phoenix.Router
-multi_account_routes MultiAccountController, MyApp.Accounts.User
-
-# Multi-account controller
-use AshMultiAccount.Phoenix.Controller, user_resource: MyApp.Accounts.User
-
-# LiveView hook (must come after AshAuthentication's hook)
-on_mount: [
-  {AshAuthentication.Phoenix.LiveSession, :load_from_session},
-  {AshMultiAccount.Phoenix.LiveHook, {:load_multi_account, MyApp.Accounts.User}}
-]
-```
-
-The `LoadMultiAccount` plug handles controller-rendered pages, while the `LiveHook` handles LiveView pages. Both resolve the same `@current_user` and `@primary_user` assigns from the same session state, and can coexist in the same app.
-
-See the [Getting Started guide](documentation/tutorials/getting-started.md) for the full step-by-step walkthrough.
+The Phoenix integration provides plugs, controllers, router macros, and a LiveView hook — all resolving the same `@current_user` and `@primary_user` assigns. See the [Getting Started guide](documentation/tutorials/getting-started.md) for the full walkthrough.
 
 ## Documentation
 

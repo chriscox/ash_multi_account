@@ -17,17 +17,17 @@ These are pulled in automatically as transitive dependencies of `ash_multi_accou
 You also need:
 
 - **A user resource** — an Ash resource with AshAuthentication set up and registered in a domain (can be any module name, e.g. `MyApp.Accounts.User`, `MyApp.Accounts.Person`, etc.)
+- **AshAuthentication Phoenix** (`ash_authentication_phoenix`) — provides `AshAuthentication.Phoenix.Controller` which is used by the auth controller that handles sign-in callbacks. Most Phoenix + AshAuthentication apps already have this.
 
 > **Don't have a user resource yet?** Follow the [AshAuthentication Getting Started guide](https://hexdocs.pm/ash_authentication/get-started.html) to create one with an authentication strategy, then come back here.
 
-This is all you need for **controller-only** setups using the `LoadMultiAccount` plug and controller-rendered pages.
+### Also needed for LiveView
 
-### Also add these if using LiveView
+If your app uses LiveView for authenticated pages, also add:
 
-These are **not** pulled in transitively — add them to your app's `mix.exs`:
-
-- **AshAuthentication Phoenix** (`ash_authentication_phoenix`) — provides `AshAuthentication.Phoenix.LiveSession` which the multi-account LiveView hook runs alongside. Also provides the auth controller (`AshAuthentication.Phoenix.Controller`) that the Igniter installer auto-detects and patches.
 - **Phoenix LiveView** (`phoenix_live_view`) — needed for the LiveView hook (`AshMultiAccount.Phoenix.LiveHook`) and the account switcher component (`AshMultiAccount.Phoenix.Components`).
+
+> **Note:** `ash_authentication_phoenix` also provides `AshAuthentication.Phoenix.LiveSession` which the multi-account LiveView hook runs alongside. You likely already have it if your app uses AshAuthentication with LiveView.
 
 The installer patches your existing resources and router; it does not create a User resource, domain, or authentication setup from scratch.
 
@@ -43,26 +43,59 @@ AshMultiAccount is **strategy-agnostic**. It works with any AshAuthentication st
 
 ## Installation
 
-Add `ash_multi_account` to your dependencies:
-
-```elixir
-# mix.exs
-def deps do
-  [
-    {:ash_multi_account, "~> 0.1.0"}
-  ]
-end
-```
-
-Run `mix deps.get` to fetch the dependency.
+Add the dependencies to your `mix.exs`. What you need depends on your setup:
 
 <!-- tabs-open -->
 
 ### Using Igniter (recommended)
 
-The Igniter installer automates steps 1–6 (resource extensions, linked account creation, domain registration, auth controller patching, controller creation, and router setup). Steps 7–8 (LiveView hook and account switcher component) are app-specific and provided as post-install instructions.
+```elixir
+# mix.exs
+def deps do
+  [
+    {:ash_multi_account, "~> 0.1.0"},
+    {:igniter, "~> 0.6"},
+    # If not already present:
+    {:ash_authentication_phoenix, "~> 2.0"},
+    # Also add if using LiveView:
+    {:phoenix_live_view, "~> 1.0"}
+  ]
+end
+```
 
-> **Note:** The Igniter installer requires `igniter` as a dependency in your app. If you don't already have it, add `{:igniter, "~> 0.6"}` to your deps and run `mix deps.get` before proceeding.
+### Manual
+
+```elixir
+# mix.exs
+def deps do
+  [
+    {:ash_multi_account, "~> 0.1.0"},
+    # If not already present:
+    {:ash_authentication_phoenix, "~> 2.0"},
+    # Also add if using LiveView:
+    {:phoenix_live_view, "~> 1.0"}
+  ]
+end
+```
+
+<!-- tabs-close -->
+
+Run `mix deps.get` to fetch the dependencies.
+
+<!-- tabs-open -->
+
+### Using Igniter (recommended)
+
+The Igniter installer automates steps 1–6 below:
+
+1. Adds the `AshMultiAccount` extension to your User resource
+2. Creates the LinkedAccount resource (or patches it if it exists)
+3. Registers LinkedAccount in your domain
+4. Patches your auth controller's `success/4` to call `put_user_id/3`
+5. Creates a `MultiAccountController`
+6. Adds `use AshMultiAccount.Phoenix.Router`, the `Plug`, and routes to your router
+
+Steps 7–8 (LiveView hook / controller plug and account switcher component) are app-specific — the installer prints post-install instructions for these.
 
 ```sh
 mix igniter.install ash_multi_account
@@ -82,10 +115,10 @@ mix igniter.install ash_multi_account \
   --linked-account MyApp.Accounts.LinkedAccount
 ```
 
-After running the installer, follow the post-install instructions it prints for:
+After running the installer:
 
-- Adding the LiveView `on_mount` hook (Step 7 below)
-- Adding the account switcher component (Step 8 below)
+- **LiveView apps:** Follow the post-install instructions for the LiveView hook (Step 7) and component (Step 8)
+- **Controller-only apps:** Add the `LoadMultiAccount` plug (Step 7 alt) and component (Step 8)
 
 If using a database-backed data layer (AshPostgres, AshSqlite), update the generated LinkedAccount resource's data layer configuration and run migrations:
 
@@ -221,7 +254,9 @@ defmodule MyAppWeb.AuthController do
 end
 ```
 
-> **Why is this needed?** AshAuthentication stores a JWT subject string in the session. The multi-account LiveView hook needs a plain user ID to resolve the current user after account switches. `put_user_id/3` writes the subject in a format both systems can read.
+> **Note:** Replace `:my_app` in `clear_session(:my_app)` with your OTP application name (the `:app` value in your `mix.exs` project config).
+
+> **Why is `put_user_id` needed?** AshAuthentication stores a JWT subject string in the session. The multi-account hook needs a plain user ID to resolve the current user after account switches. `put_user_id/3` writes the subject in a format both systems can read.
 
 ## Step 5: Create the Multi-Account Controller
 
@@ -267,7 +302,9 @@ end
 
 `AshMultiAccount.Phoenix.Plug` ensures a session token UUID exists before any multi-account routes are hit.
 
-## Step 7: Add the LiveView Hook
+## Step 7: LiveView Setup
+
+> **Skip this step** if your app doesn't use LiveView. See [Step 7 alt](#step-7-alt-controller-only-setup) instead.
 
 Add the multi-account hook to your authenticated live sessions. It should run **after** AshAuthentication's hook:
 
@@ -286,9 +323,13 @@ The hook sets two assigns on every mount:
 - `@current_user` — the user currently acting (may differ from primary after a switch)
 - `@primary_user` — the primary account owner (`nil` when not in multi-account mode)
 
-## Step 7b: Controller Alternative (LoadMultiAccount Plug)
+> **Tip:** If your app has both LiveView and controller-rendered pages, you can add the `LoadMultiAccount` plug (Step 7 alt) alongside the LiveView hook. They read the same session keys and coexist without conflict.
 
-If you also have controller-rendered pages that need multi-account assigns, add the `LoadMultiAccount` plug to your browser pipeline:
+## Step 7 alt: Controller-Only Setup
+
+> **Skip this step** if you already added the LiveView hook above and don't have controller-rendered pages that need multi-account assigns.
+
+Add the `LoadMultiAccount` plug to your browser pipeline:
 
 ```elixir
 pipeline :browser do
@@ -300,7 +341,7 @@ end
 
 This plug sets the same `@current_user` and `@primary_user` assigns on `conn` that the LiveView hook sets on the socket. It must run after `:fetch_session` and `AshMultiAccount.Phoenix.Plug`.
 
-The plug and the LiveView hook can coexist — they read the same session keys. Use the plug for controller pages and the hook for LiveView pages.
+For controller-only apps, this is the only integration step needed — the plug handles user resolution and multi-account switching for all controller-rendered pages.
 
 ## Step 8: Add the Account Switcher Component
 
