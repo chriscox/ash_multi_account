@@ -4,16 +4,9 @@ This guide walks you through adding multi-account linking and switching to an ex
 
 ## Requirements
 
-| Dependency | Version | Required? |
-|------------|---------|-----------|
-| Elixir | >= 1.17 | Yes |
-| Ash | ~> 3.0 | Yes |
-| Spark | ~> 2.0 | Yes (pulled in by Ash) |
-| AshAuthentication | ~> 4.0 | Yes (for Phoenix integration) |
-| Phoenix | ~> 1.7 | Yes (for web layer) |
-| Phoenix LiveView | ~> 1.0 | Yes (for LiveView hook + components) |
+You need an existing Ash app with AshAuthentication configured and a User resource with at least one authentication strategy. The Phoenix integration requires Phoenix and Phoenix LiveView.
 
-You need an existing Ash app with AshAuthentication configured and a User resource with at least one authentication strategy.
+Specific version requirements are defined in the library's `mix.exs` — running `mix deps.get` will ensure compatible versions are resolved automatically.
 
 ### Data Layer
 

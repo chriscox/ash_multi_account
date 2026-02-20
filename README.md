@@ -11,9 +11,9 @@ Multi-account linking and switching for [Ash](https://ash-hq.org/) apps. Let use
 
 ## Why?
 
-Many apps need multi-account support: family accounts, work/personal separation, admin impersonation. Building this correctly requires careful session management, security considerations (session fixation, authorization checks), and LiveView integration. This library handles all of that.
+[AshAuthentication](https://hexdocs.pm/ash_authentication) and [AshAuthentication.Phoenix](https://hexdocs.pm/ash_authentication_phoenix) provide excellent single-user authentication — strategies, session management, and LiveView integration all work out of the box. But many apps need users to link and switch between multiple accounts: family accounts, work/personal separation, admin impersonation. That's a different problem entirely, requiring its own session management, security considerations (session fixation, authorization checks), and UI integration across both LiveView and controller-rendered pages.
 
-There's nothing like this in the Ash ecosystem today.
+Ash Multi Account picks up where AshAuthentication leaves off, adding multi-account linking and switching as a natural extension of the same Ash ecosystem.
 
 ## Features
 

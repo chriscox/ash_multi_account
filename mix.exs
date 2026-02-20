@@ -152,6 +152,7 @@ defmodule AshMultiAccount.MixProject do
 
   defp groups_for_extras do
     [
+      "About Ash Multi Account": ~r"(README|CHANGELOG)\.md$",
       Tutorials: ~r"documentation/tutorials",
       Topics: ~r"documentation/topics",
       Reference: ~r"documentation/dsls"
