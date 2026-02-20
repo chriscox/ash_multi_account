@@ -56,6 +56,7 @@ defmodule AshMultiAccount.Phoenix.Controller do
 
       alias AshMultiAccount.Phoenix.Session
 
+      @__controller_mod__ unquote(__MODULE__)
       @__user_resource__ unquote(user_resource)
 
       @doc false
@@ -65,7 +66,7 @@ defmodule AshMultiAccount.Phoenix.Controller do
 
       @doc false
       def after_switch_path(conn) do
-        AshMultiAccount.Phoenix.Controller.origin_path(conn) || "/"
+        @__controller_mod__.origin_path(conn) || "/"
       end
 
       @doc false
@@ -167,7 +168,7 @@ defmodule AshMultiAccount.Phoenix.Controller do
 
       defp setup_multi_account_session(conn, primary_user_id) do
         session_token = Session.get_session_token(conn) || Ash.UUID.generate()
-        origin = AshMultiAccount.Phoenix.Controller.origin_path(conn)
+        origin = @__controller_mod__.origin_path(conn)
 
         Logger.info("Setting up multi-account session for user #{primary_user_id}")
 

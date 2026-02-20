@@ -4,6 +4,7 @@ defmodule AshMultiAccount.Phoenix.ControllerTest do
   import Phoenix.ConnTest
   import Plug.Conn, only: [get_session: 2]
 
+  alias AshMultiAccount.Phoenix.Controller
   alias AshMultiAccount.Test.LinkedAccount
   alias AshMultiAccount.Test.User
 
@@ -255,7 +256,8 @@ defmodule AshMultiAccount.Phoenix.ControllerTest do
       create_link!(primary_user, linked_user, session_token)
 
       conn =
-        conn_with_user(primary_user,
+        primary_user
+        |> conn_with_user(
           primary_user_id: primary_user.id,
           session_token: session_token
         )
@@ -274,7 +276,8 @@ defmodule AshMultiAccount.Phoenix.ControllerTest do
       create_link!(primary_user, linked_user, session_token)
 
       conn =
-        conn_with_user(primary_user,
+        primary_user
+        |> conn_with_user(
           primary_user_id: primary_user.id,
           session_token: session_token
         )
@@ -292,7 +295,7 @@ defmodule AshMultiAccount.Phoenix.ControllerTest do
         build_conn()
         |> Plug.Conn.put_req_header("referer", "http://localhost:4000/dashboard")
 
-      assert AshMultiAccount.Phoenix.Controller.origin_path(conn) == "/dashboard"
+      assert Controller.origin_path(conn) == "/dashboard"
     end
 
     test "includes query string from referer" do
@@ -303,13 +306,13 @@ defmodule AshMultiAccount.Phoenix.ControllerTest do
           "http://localhost:4000/page?tab=settings&view=grid"
         )
 
-      assert AshMultiAccount.Phoenix.Controller.origin_path(conn) ==
+      assert Controller.origin_path(conn) ==
                "/page?tab=settings&view=grid"
     end
 
     test "returns nil when no referer header" do
       conn = build_conn()
-      assert AshMultiAccount.Phoenix.Controller.origin_path(conn) == nil
+      assert Controller.origin_path(conn) == nil
     end
 
     test "rejects protocol-relative paths (open redirect prevention)" do
@@ -317,7 +320,7 @@ defmodule AshMultiAccount.Phoenix.ControllerTest do
         build_conn()
         |> Plug.Conn.put_req_header("referer", "http://localhost:4000//evil.com")
 
-      assert AshMultiAccount.Phoenix.Controller.origin_path(conn) == nil
+      assert Controller.origin_path(conn) == nil
     end
 
     test "returns nil for referer without path" do
@@ -325,7 +328,7 @@ defmodule AshMultiAccount.Phoenix.ControllerTest do
         build_conn()
         |> Plug.Conn.put_req_header("referer", "not-a-url")
 
-      assert AshMultiAccount.Phoenix.Controller.origin_path(conn) == nil
+      assert Controller.origin_path(conn) == nil
     end
   end
 end
