@@ -18,6 +18,8 @@ You also need:
 
 - **A user resource** — an Ash resource with AshAuthentication set up and registered in a domain (can be any module name, e.g. `MyApp.Accounts.User`, `MyApp.Accounts.Person`, etc.)
 
+> **Don't have a user resource yet?** Follow the [AshAuthentication Getting Started guide](https://hexdocs.pm/ash_authentication/get-started.html) to create one with an authentication strategy, then come back here.
+
 This is all you need for **controller-only** setups using the `LoadMultiAccount` plug and controller-rendered pages.
 
 ### Also add these if using LiveView
