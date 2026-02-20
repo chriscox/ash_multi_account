@@ -368,6 +368,6 @@ The component imposes no styling — you control all HTML and CSS through slots.
 
 ## What's Next?
 
-- [How It Works](how-it-works.md) — understand the data model, session tokens, and linking/switching flows
-- [Phoenix Integration](phoenix-integration.md) — deep dive into each Phoenix module
-- [Testing](testing.md) — set up test support and write tests for multi-account flows
+- [How It Works](../topics/how-it-works.md) — understand the data model, session tokens, and linking/switching flows
+- [Phoenix Integration](../topics/phoenix-integration.md) — deep dive into each Phoenix module
+- [Testing](../topics/testing.md) — set up test support and write tests for multi-account flows
