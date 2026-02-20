@@ -32,6 +32,22 @@ defmodule AshMultiAccount.Phoenix.Controller do
     `configure_session(renew: true)` to reduce session fixation risk.
   """
 
+  # Public but undocumented: called from macro-generated code in __using__/1.
+  # Extracts the path (with query string) from the HTTP Referer header for
+  # return-to-origin redirects. Rejects protocol-relative paths to prevent
+  # open redirects.
+  @doc false
+  @spec origin_path(Plug.Conn.t()) :: String.t() | nil
+  def origin_path(conn) do
+    with [referer | _] <- Plug.Conn.get_req_header(conn, "referer"),
+         %URI{path: "/" <> _ = path, query: query} <- URI.parse(referer),
+         false <- String.starts_with?(path, "//") do
+      if query, do: "#{path}?#{query}", else: path
+    else
+      _ -> nil
+    end
+  end
+
   defmacro __using__(opts) do
     user_resource = Keyword.fetch!(opts, :user_resource)
 
@@ -43,10 +59,14 @@ defmodule AshMultiAccount.Phoenix.Controller do
       @__user_resource__ unquote(user_resource)
 
       @doc false
-      def after_link_path(_conn), do: "/"
+      def after_link_path(conn) do
+        Plug.Conn.get_session(conn, "multi_account_return_to") || "/"
+      end
 
       @doc false
-      def after_switch_path(_conn), do: "/"
+      def after_switch_path(conn) do
+        AshMultiAccount.Phoenix.Controller.origin_path(conn) || "/"
+      end
 
       @doc false
       def sign_in_path(_conn, primary_user_id),
@@ -132,22 +152,28 @@ defmodule AshMultiAccount.Phoenix.Controller do
           {:ok, user} ->
             user
 
-          {:error, %Ash.Error.Query.NotFound{}} ->
-            Logger.warning("User not found: #{user_id}")
-            nil
-
           {:error, error} ->
-            raise "AshMultiAccount: Failed to load user #{user_id}: #{inspect(error)}"
+            if AshMultiAccount.Phoenix.UserResolver.not_found_error?(error) do
+              Logger.warning("User not found: #{user_id}")
+              nil
+            else
+              raise "AshMultiAccount: Failed to load user #{user_id}: #{inspect(error)}"
+            end
         end
       end
 
+      defp maybe_put_session(conn, _key, nil), do: conn
+      defp maybe_put_session(conn, key, value), do: Plug.Conn.put_session(conn, key, value)
+
       defp setup_multi_account_session(conn, primary_user_id) do
         session_token = Session.get_session_token(conn) || Ash.UUID.generate()
+        origin = AshMultiAccount.Phoenix.Controller.origin_path(conn)
 
         Logger.info("Setting up multi-account session for user #{primary_user_id}")
 
         conn
         |> Session.put_multi_account_session(primary_user_id, session_token)
+        |> maybe_put_session("multi_account_return_to", origin)
         |> put_flash(
           :info,
           "Multi-account session established. Please sign in with another account to link it."
@@ -205,11 +231,14 @@ defmodule AshMultiAccount.Phoenix.Controller do
               "Successfully linked account #{current_user.id} to primary #{primary_user.id}"
             )
 
+            return_to = after_link_path(conn)
+
             conn
             |> Session.put_primary_user_id(primary_user.id)
             |> Plug.Conn.delete_session("user_return_to")
+            |> Plug.Conn.delete_session("multi_account_return_to")
             |> put_flash(:info, "Account successfully linked!")
-            |> redirect(to: after_link_path(conn))
+            |> redirect(to: return_to)
 
           {:error, error} ->
             flash_message = handle_link_error(error, current_user.id, primary_user.id)

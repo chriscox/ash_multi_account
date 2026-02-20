@@ -157,7 +157,7 @@ multi_account do
 end
 ```
 
-These fields are loaded by both the LiveView hook and the `get_linked_accounts` preparation, so they're available when rendering the switcher.
+These fields are loaded by the LiveView hook, the `LoadMultiAccount` plug, and the `get_linked_accounts` preparation, so they're available when rendering the switcher.
 
 ## Showing Account Status
 
@@ -211,6 +211,36 @@ Then use it anywhere:
   current_user={@current_user}
   primary_user={@primary_user}
 />
+```
+
+## Using in Controller Templates
+
+The account switcher is a standard `Phoenix.Component` and works identically in both LiveView and controller-rendered templates. The only requirement is that `@current_user` and `@primary_user` assigns are available.
+
+For LiveView pages, these assigns come from `AshMultiAccount.Phoenix.LiveHook`. For controller pages, add the `AshMultiAccount.Phoenix.LoadMultiAccount` plug to your pipeline:
+
+```elixir
+pipeline :browser do
+  # ... existing plugs ...
+  plug AshMultiAccount.Phoenix.Plug
+  plug AshMultiAccount.Phoenix.LoadMultiAccount, user_resource: MyApp.Accounts.User
+end
+```
+
+Then use the component in your controller template exactly as you would in a LiveView:
+
+```heex
+<AshMultiAccount.Phoenix.Components.account_switcher
+  current_user={@current_user}
+  primary_user={@primary_user}
+>
+  <:account :let={account}>
+    <!-- same rendering as LiveView -->
+  </:account>
+  <:add_account :let={url}>
+    <.link href={url}>Add another account</.link>
+  </:add_account>
+</AshMultiAccount.Phoenix.Components.account_switcher>
 ```
 
 ## Single-Account Mode

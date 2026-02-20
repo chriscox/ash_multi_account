@@ -228,6 +228,22 @@ The hook sets two assigns on every mount:
 - `@current_user` — the user currently acting (may differ from primary after a switch)
 - `@primary_user` — the primary account owner (`nil` when not in multi-account mode)
 
+## Step 7b: Controller Alternative (LoadMultiAccount Plug)
+
+If you also have controller-rendered pages that need multi-account assigns, add the `LoadMultiAccount` plug to your browser pipeline:
+
+```elixir
+pipeline :browser do
+  # ... existing plugs ...
+  plug AshMultiAccount.Phoenix.Plug
+  plug AshMultiAccount.Phoenix.LoadMultiAccount, user_resource: MyApp.Accounts.User
+end
+```
+
+This plug sets the same `@current_user` and `@primary_user` assigns on `conn` that the LiveView hook sets on the socket. It must run after `:fetch_session` and `AshMultiAccount.Phoenix.Plug`.
+
+The plug and the LiveView hook can coexist — they read the same session keys. Use the plug for controller pages and the hook for LiveView pages.
+
 ## Step 8: Add the Account Switcher Component
 
 Use the slot-based component in your layout or navigation:
@@ -249,7 +265,7 @@ Use the slot-based component in your layout or navigation:
 </AshMultiAccount.Phoenix.Components.account_switcher>
 ```
 
-The component imposes no styling — you control all HTML and CSS through slots.
+The component imposes no styling — you control all HTML and CSS through slots. It works identically in both LiveView templates and controller-rendered templates — it's a standard `Phoenix.Component` that only needs `@current_user` and `@primary_user` assigns.
 
 ## What's Next?
 

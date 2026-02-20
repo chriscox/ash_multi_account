@@ -19,13 +19,10 @@ defmodule DemoWeb.HomeLive do
               tabindex="0"
               class="dropdown-content menu bg-base-100 rounded-box z-10 w-fit shadow-lg border border-base-200 mt-2"
             >
-              <%!-- All accounts --%>
               <.account_menu_items
                 current_user={@current_user}
                 primary_user={@primary_user}
               />
-
-              <%!-- Sign out --%>
               <hr class="border-base-300 my-0.5" />
               <li>
                 <.link href={~p"/sign-out"} class="text-error">
@@ -40,6 +37,47 @@ defmodule DemoWeb.HomeLive do
 
     <main class="max-w-2xl mx-auto py-8 px-4">
       <%= if @current_user do %>
+        <%!-- Page tabs --%>
+        <div class="inline-flex rounded-lg bg-base-200 p-1 mb-6">
+          <span class="rounded-md bg-base-100 px-4 py-2 text-sm font-medium shadow-sm">
+            LiveView Page
+          </span>
+          <.link
+            href={~p"/controller"}
+            class="rounded-md px-4 py-2 text-sm text-base-content/60 hover:text-base-content transition-colors"
+          >
+            Controller Page
+          </.link>
+        </div>
+
+        <%!-- Page info + multi-account status --%>
+        <div class="mb-6">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="badge badge-primary badge-sm">LiveView</span>
+            <h1 class="text-xl font-semibold">LiveView Page</h1>
+          </div>
+          <p class="text-sm text-base-content/60 mb-3">
+            This page is rendered by Phoenix LiveView. Multi-account assigns
+            (<code class="text-xs bg-base-200 px-1 rounded">@current_user</code> and <code class="text-xs bg-base-200 px-1 rounded">@primary_user</code>) are resolved by the
+            <code class="text-xs bg-base-200 px-1 rounded">AshMultiAccount.Phoenix.LiveHook</code>
+            on every mount via the <code class="text-xs bg-base-200 px-1 rounded">on_mount</code>
+            callback.
+          </p>
+          <%= if @primary_user do %>
+            <div class="flex items-center gap-2 text-success text-sm">
+              <span class="hero-check-circle-solid w-4 h-4 shrink-0" />
+              <span>
+                Multi-account active &mdash; primary: <strong>{@primary_user.email}</strong>
+              </span>
+            </div>
+          <% else %>
+            <div class="flex items-center gap-2 text-base-content/40 text-sm">
+              <span class="hero-minus-circle w-4 h-4 shrink-0" />
+              <span>Single-account mode</span>
+            </div>
+          <% end %>
+        </div>
+
         <div class="card bg-base-100 shadow-sm mb-6">
           <div class="card-body">
             <h2 class="card-title">Current User</h2>
@@ -66,32 +104,6 @@ defmodule DemoWeb.HomeLive do
 
         <div class="card bg-base-100 shadow-sm mb-6">
           <div class="card-body">
-            <h2 class="card-title">Multi-Account Status</h2>
-            <%= if @primary_user do %>
-              <div class="flex items-start gap-2 text-success">
-                <span class="hero-check-circle-solid w-5 h-5 mt-0.5 shrink-0" />
-                <div>
-                  <p>Multi-account session active</p>
-                  <p class="text-sm text-base-content/60">
-                    Primary account: <strong>{@primary_user.email}</strong>.
-                    Use the menu above to switch between linked accounts.
-                  </p>
-                </div>
-              </div>
-            <% else %>
-              <div class="flex items-start gap-2 text-base-content/50">
-                <span class="hero-information-circle w-5 h-5 mt-0.5 shrink-0" />
-                <p class="text-sm">
-                  Single-account mode. Link another account using <strong>Add another account</strong>
-                  in the user menu to enable switching.
-                </p>
-              </div>
-            <% end %>
-          </div>
-        </div>
-
-        <div class="card bg-base-100 shadow-sm mb-6">
-          <div class="card-body">
             <h2 class="card-title text-base">How to Try It</h2>
             <ol class="list-decimal list-inside space-y-2 text-sm text-base-content/70">
               <li>
@@ -102,6 +114,10 @@ defmodule DemoWeb.HomeLive do
               </li>
               <li>
                 Open the user menu again to switch between your linked accounts.
+              </li>
+              <li>
+                Switch to the <strong>Controller Page</strong>
+                tab to see the same data resolved by a plug instead of a hook.
               </li>
             </ol>
           </div>

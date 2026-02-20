@@ -30,7 +30,7 @@ The extension adds to your User resource:
 
 1. **`:linked_accounts` calculation** — resolves linked account records for a given session token. Implemented by `AshMultiAccount.Calculations.LinkedAccountSessions`.
 
-2. **`:get_user_with_linked_accounts` read action** — loads a user by `primary_user_id` with display fields and the linked accounts calculation. Used by the LiveView hook on every mount.
+2. **`:get_user_with_linked_accounts` read action** — loads a user by `primary_user_id` with display fields and the linked accounts calculation. Used by the LiveView hook on every mount and by the `LoadMultiAccount` plug on every controller request.
 
 ### LinkedAccount Resource (`AshMultiAccount.LinkedAccount`)
 
@@ -130,7 +130,7 @@ Three session keys manage the multi-account state:
 | `"primary_user_id"` | UUID of the primary account | Link action |
 | `"session_token"` | UUID tying links to this session | Plug (auto-generated) |
 
-A multi-account session is "active" when both `"primary_user_id"` and `"session_token"` are present. The LiveView hook checks this to decide whether to load linked accounts or operate in standard single-account mode.
+A multi-account session is "active" when both `"primary_user_id"` and `"session_token"` are present. Both the LiveView hook (`LiveHook`) and the controller plug (`LoadMultiAccount`) check these same keys to decide whether to load linked accounts or operate in standard single-account mode. They can coexist in the same app — the hook handles LiveView pages while the plug handles controller-rendered pages, and both read from the same session state.
 
 ## Compile-Time Verification
 

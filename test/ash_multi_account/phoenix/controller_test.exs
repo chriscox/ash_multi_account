@@ -246,5 +246,86 @@ defmodule AshMultiAccount.Phoenix.ControllerTest do
       assert redirected_to(conn) == "/"
       assert get_session(conn, "user") == "user?id=#{primary_user.id}"
     end
+
+    test "switch redirects to referer when present", %{
+      primary_user: primary_user,
+      linked_user: linked_user,
+      session_token: session_token
+    } do
+      create_link!(primary_user, linked_user, session_token)
+
+      conn =
+        conn_with_user(primary_user,
+          primary_user_id: primary_user.id,
+          session_token: session_token
+        )
+        |> Plug.Conn.put_req_header("referer", "http://localhost:4000/controller")
+
+      conn = get(conn, "/link/switch_to/#{linked_user.id}")
+
+      assert redirected_to(conn) == "/controller"
+    end
+
+    test "switch preserves query string from referer", %{
+      primary_user: primary_user,
+      linked_user: linked_user,
+      session_token: session_token
+    } do
+      create_link!(primary_user, linked_user, session_token)
+
+      conn =
+        conn_with_user(primary_user,
+          primary_user_id: primary_user.id,
+          session_token: session_token
+        )
+        |> Plug.Conn.put_req_header("referer", "http://localhost:4000/page?tab=settings")
+
+      conn = get(conn, "/link/switch_to/#{linked_user.id}")
+
+      assert redirected_to(conn) == "/page?tab=settings"
+    end
+  end
+
+  describe "origin_path/1" do
+    test "extracts path from valid referer" do
+      conn =
+        build_conn()
+        |> Plug.Conn.put_req_header("referer", "http://localhost:4000/dashboard")
+
+      assert AshMultiAccount.Phoenix.Controller.origin_path(conn) == "/dashboard"
+    end
+
+    test "includes query string from referer" do
+      conn =
+        build_conn()
+        |> Plug.Conn.put_req_header(
+          "referer",
+          "http://localhost:4000/page?tab=settings&view=grid"
+        )
+
+      assert AshMultiAccount.Phoenix.Controller.origin_path(conn) ==
+               "/page?tab=settings&view=grid"
+    end
+
+    test "returns nil when no referer header" do
+      conn = build_conn()
+      assert AshMultiAccount.Phoenix.Controller.origin_path(conn) == nil
+    end
+
+    test "rejects protocol-relative paths (open redirect prevention)" do
+      conn =
+        build_conn()
+        |> Plug.Conn.put_req_header("referer", "http://localhost:4000//evil.com")
+
+      assert AshMultiAccount.Phoenix.Controller.origin_path(conn) == nil
+    end
+
+    test "returns nil for referer without path" do
+      conn =
+        build_conn()
+        |> Plug.Conn.put_req_header("referer", "not-a-url")
+
+      assert AshMultiAccount.Phoenix.Controller.origin_path(conn) == nil
+    end
   end
 end

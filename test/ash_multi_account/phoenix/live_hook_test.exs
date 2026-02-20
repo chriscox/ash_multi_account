@@ -166,7 +166,7 @@ defmodule AshMultiAccount.Phoenix.LiveHookTest do
       assert socket.redirected != nil
     end
 
-    test "continues with nil assigns when primary user not found", %{
+    test "falls back to standard mode when primary user not found", %{
       session_token: session_token
     } do
       fake_id = Ash.UUID.generate()
@@ -179,6 +179,7 @@ defmodule AshMultiAccount.Phoenix.LiveHookTest do
 
       socket = build_socket()
 
+      # Falls back to standard mode: session user also not found, so nil assigns
       {:cont, socket} =
         LiveHook.on_mount({:load_multi_account, User}, %{}, session, socket)
 

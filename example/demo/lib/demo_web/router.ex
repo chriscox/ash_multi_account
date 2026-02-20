@@ -11,6 +11,7 @@ defmodule DemoWeb.Router do
     plug :protect_from_forgery
     plug :put_secure_browser_headers
     plug AshMultiAccount.Phoenix.Plug
+    plug AshMultiAccount.Phoenix.LoadMultiAccount, user_resource: Demo.Accounts.User
     plug :store_return_to
   end
 
@@ -32,6 +33,9 @@ defmodule DemoWeb.Router do
 
     # Multi-account: link and switch routes
     multi_account_routes(MultiAccountController, Demo.Accounts.User)
+
+    # Controller-rendered page with multi-account support via LoadMultiAccount plug
+    get "/controller", DashboardController, :show
 
     # Main app routes with multi-account LiveView hook
     live_session :authenticated,

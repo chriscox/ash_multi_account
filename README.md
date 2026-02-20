@@ -23,9 +23,12 @@ There's nothing like this in the Ash ecosystem today.
 - Activate/deactivate linked accounts with status tracking
 - Works with **any** AshAuthentication strategy (password, OAuth, magic links, etc.)
 - Phoenix controller mixin with link/switch actions and session regeneration
-- LiveView hook that resolves `current_user` and `primary_user` on every mount
-- Slot-based account switcher component — you control all HTML and styling
+- **Works with both LiveView and controller-rendered pages:**
+  - LiveView hook resolves `current_user` and `primary_user` on every mount
+  - `LoadMultiAccount` plug resolves the same assigns for controller pages
+- Slot-based account switcher component — works identically in both contexts
 - Router macros for link/switch routes
+- Automatic return-to-origin after linking and switching (stays on current page)
 - Session token plug for automatic token management
 
 ## Built On
@@ -70,12 +73,15 @@ end
 Then wire up the Phoenix integration:
 
 ```elixir
-# Router
-use AshMultiAccount.Phoenix.Router
+# Router pipeline
 plug AshMultiAccount.Phoenix.Plug
+plug AshMultiAccount.Phoenix.LoadMultiAccount, user_resource: MyApp.Accounts.User
+
+# Routes
+use AshMultiAccount.Phoenix.Router
 multi_account_routes MultiAccountController, MyApp.Accounts.User
 
-# Controller
+# Multi-account controller
 use AshMultiAccount.Phoenix.Controller, user_resource: MyApp.Accounts.User
 
 # LiveView hook (must come after AshAuthentication's hook)
@@ -84,6 +90,8 @@ on_mount: [
   {AshMultiAccount.Phoenix.LiveHook, {:load_multi_account, MyApp.Accounts.User}}
 ]
 ```
+
+The `LoadMultiAccount` plug handles controller-rendered pages, while the `LiveHook` handles LiveView pages. Both resolve the same `@current_user` and `@primary_user` assigns from the same session state, and can coexist in the same app.
 
 See the [Getting Started guide](documentation/tutorials/getting-started.md) for the full step-by-step walkthrough.
 
@@ -98,7 +106,14 @@ See the [Getting Started guide](documentation/tutorials/getting-started.md) for 
 
 ## Demo App
 
-A complete demo Phoenix app lives in `example/demo/`. It uses password authentication with ETS (no external dependencies — just `mix setup && mix phx.server`) and exercises every integration point — auth, linking, switching, the account switcher component, and the LiveView hook.
+A complete demo Phoenix app lives in `example/demo/`. It uses password authentication with ETS (no external dependencies — just `mix setup && mix phx.server`).
+
+The demo includes two pages to demonstrate that multi-account works with both rendering approaches:
+
+- **LiveView Page** (`/`) — uses `AshMultiAccount.Phoenix.LiveHook` to resolve assigns via `on_mount`
+- **Controller Page** (`/controller`) — uses `AshMultiAccount.Phoenix.LoadMultiAccount` plug to resolve assigns in the router pipeline
+
+Both pages show the same user data, account switcher, and multi-account status — proving the library works identically in both contexts. Switch between them using the tabs at the top of each page.
 
 See the [demo README](example/demo/README.md) for setup instructions and a walkthrough.
 

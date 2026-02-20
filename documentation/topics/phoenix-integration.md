@@ -1,6 +1,6 @@
 # Phoenix Integration
 
-AshMultiAccount provides six Phoenix modules that handle session management, routing, controller actions, LiveView state, and UI components. This topic covers each module in detail.
+AshMultiAccount provides seven Phoenix modules that handle session management, routing, controller actions, LiveView state, controller state, and UI components. This topic covers each module in detail.
 
 ## Plug
 
@@ -16,6 +16,50 @@ end
 ```
 
 The plug generates a UUID via `Ash.UUID.generate()` and stores it in the `"session_token"` session key. If a token already exists, the plug is a no-op. This runs on every request in the pipeline, so the token is always available when the controller needs it.
+
+## LoadMultiAccount Plug
+
+`AshMultiAccount.Phoenix.LoadMultiAccount` resolves `@current_user` and `@primary_user` assigns for controller-rendered pages. It mirrors the logic of the LiveView hook but operates on `Plug.Conn`.
+
+```elixir
+pipeline :browser do
+  plug :fetch_session
+  # ... other plugs ...
+  plug AshMultiAccount.Phoenix.Plug
+  plug AshMultiAccount.Phoenix.LoadMultiAccount, user_resource: MyApp.Accounts.User
+end
+```
+
+### Configuration
+
+The plug requires a `:user_resource` option — it raises `ArgumentError` at compile time if omitted. It must run after `:fetch_session` and `AshMultiAccount.Phoenix.Plug` in the pipeline.
+
+### Multi-Account Mode
+
+When `multi_account_session?` is true:
+
+1. Loads the primary user via the `get_user_with_linked_accounts` action
+2. Validates the primary user passes `active_check`
+3. Resolves the current user from the session (overriding any JWT-based assign)
+4. Assigns both `@current_user` and `@primary_user`
+
+### Standard Mode
+
+When no multi-account session exists:
+
+1. Gets `current_user` from conn assigns or the session
+2. Loads configured `display_fields`
+3. Sets `@primary_user` to `nil`
+
+### Error Handling
+
+When the primary user is **not found** or **not active** (e.g., stale session after data reset), the plug clears the multi-account session keys and falls back to standard mode — resolving the current user from `conn.assigns` or the session. For unexpected errors (e.g., database failures), the plug assigns `nil` gracefully and lets the controller decide how to respond.
+
+### When to Use LoadMultiAccount vs LiveHook
+
+- Use **LoadMultiAccount** for controller-rendered pages (`Plug.Conn` pipeline)
+- Use **LiveHook** for LiveView pages (`on_mount` hook)
+- Both can coexist in the same app — they read the same session keys
 
 ## Session Helpers
 
@@ -76,10 +120,12 @@ end
 
 | Function | Default | Purpose |
 |----------|---------|---------|
-| `after_link_path/1` | `"/"` | Redirect after successful link |
-| `after_switch_path/1` | `"/"` | Redirect after successful switch |
+| `after_link_path/1` | Origin page (from session) or `"/"` | Redirect after successful link |
+| `after_switch_path/1` | Origin page (from Referer) or `"/"` | Redirect after successful switch |
 | `sign_in_path/2` | `"/sign-in?return_to=/link/p/:id"` | Where to send unauthenticated users |
 | `sign_out_path/1` | `"/sign-out"` | Where to send users on fatal errors |
+
+By default, both `after_link_path/1` and `after_switch_path/1` return the user to the page they were on when they started the action. For linking, the origin page is saved in the session at the start of the multi-step flow. For switching, the origin is read from the HTTP Referer header. Both fall back to `"/"` if the origin cannot be determined.
 
 ### link_account/2
 
@@ -135,8 +181,9 @@ When no multi-account session exists:
 
 ### Error Handling
 
-- If the primary user is not found or not active, the hook halts with a flash error and redirects to `/sign-out`
-- If loading fails, the hook halts with a generic error message
+- If the primary user is **not found** (e.g., stale session after data reset), the hook falls back to standard mode — resolving the current user from the session or socket assigns without multi-account context
+- If the primary user is **not active**, the hook halts with a flash error and redirects to `/sign-out`
+- If loading fails with an unexpected error, the hook halts with a generic error message
 
 ## Components
 

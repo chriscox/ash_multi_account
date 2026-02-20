@@ -27,11 +27,19 @@ defmodule AshMultiAccount.Phoenix.LiveHook do
   When no multi-account session is detected, the hook loads `:current_user` from
   socket assigns or the session, applies configured `display_fields`, and sets
   `:primary_user` to `nil`.
+
+  ## Error Handling
+
+  - If the primary user is **not found** (e.g., stale session after data reset),
+    the hook falls back to standard mode
+  - If the primary user is **not active**, the hook halts and redirects to `/sign-out`
+  - If loading fails with an unexpected error, the hook halts with a generic error message
   """
 
   import Phoenix.Component, only: [assign: 3]
 
   alias AshMultiAccount.Phoenix.Session
+  alias AshMultiAccount.Phoenix.UserResolver
 
   require Logger
 
@@ -70,8 +78,14 @@ defmodule AshMultiAccount.Phoenix.LiveHook do
 
     case Ash.read_one(query) do
       {:ok, nil} ->
-        Logger.warning("Multi-account: primary user #{primary_user_id} not found")
-        {:cont, assign_no_user(socket)}
+        # Primary user not found — likely a stale session (e.g., ETS cleared on restart).
+        # Fall back to standard mode so the current user is still resolved.
+        # The LoadMultiAccount plug (if present) will clear the stale session keys.
+        Logger.warning(
+          "Multi-account: primary user #{primary_user_id} not found, falling back to standard mode"
+        )
+
+        handle_standard(user_resource, session, socket)
 
       {:ok, primary_user} ->
         case AshMultiAccount.Helpers.validate_user_active(primary_user, user_resource) do
@@ -114,7 +128,7 @@ defmodule AshMultiAccount.Phoenix.LiveHook do
     current_user =
       socket.assigns[:current_user] || load_user_from_session(user_resource, session)
 
-    current_user = maybe_load_display_fields(current_user, user_resource)
+    current_user = UserResolver.maybe_load_display_fields(current_user, user_resource)
 
     {:cont,
      socket
@@ -138,10 +152,10 @@ defmodule AshMultiAccount.Phoenix.LiveHook do
           )
         end
 
-        maybe_load_display_fields(fallback, user_resource)
+        UserResolver.maybe_load_display_fields(fallback, user_resource)
 
       user ->
-        maybe_load_display_fields(user, user_resource)
+        UserResolver.maybe_load_display_fields(user, user_resource)
     end
   end
 
@@ -156,37 +170,13 @@ defmodule AshMultiAccount.Phoenix.LiveHook do
       {:ok, user} ->
         user
 
-      {:error, %Ash.Error.Query.NotFound{}} ->
-        Logger.warning("User not found: #{user_id}")
-        nil
-
       {:error, error} ->
-        raise "AshMultiAccount: Failed to load user #{user_id}: #{inspect(error)}"
-    end
-  end
-
-  defp assign_no_user(socket) do
-    socket
-    |> assign(:current_user, nil)
-    |> assign(:primary_user, nil)
-  end
-
-  defp maybe_load_display_fields(nil, _user_resource), do: nil
-
-  defp maybe_load_display_fields(user, user_resource) do
-    case AshMultiAccount.Info.multi_account_display_fields(user_resource) do
-      {:ok, fields} when fields != [] ->
-        case Ash.load(user, fields) do
-          {:ok, user} ->
-            user
-
-          {:error, error} ->
-            Logger.warning("Failed to load display fields #{inspect(fields)}: #{inspect(error)}")
-            user
+        if UserResolver.not_found_error?(error) do
+          Logger.warning("User not found: #{user_id}")
+          nil
+        else
+          raise "AshMultiAccount: Failed to load user #{user_id}: #{inspect(error)}"
         end
-
-      {:ok, _} ->
-        user
     end
   end
 end
