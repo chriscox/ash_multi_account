@@ -2,9 +2,32 @@
 
 This guide walks you through adding multi-account linking and switching to an existing Ash + AshAuthentication + Phoenix app. By the end, your users will be able to link multiple accounts to a single browser session and switch between them without re-authenticating.
 
-## Requirements
+## Prerequisites
 
-You need an existing Ash app with AshAuthentication configured and a User resource with at least one authentication strategy. The Phoenix integration requires Phoenix and Phoenix LiveView.
+AshMultiAccount adds multi-account support **on top of** an existing Ash + AshAuthentication + Phoenix app. Before installing, you need:
+
+### Required
+
+These are pulled in automatically as transitive dependencies of `ash_multi_account`:
+
+- **Ash and Spark**
+- **AshAuthentication** — you must have at least one authentication strategy configured
+- **Phoenix** — controllers, plugs, and router all require it
+
+You also need:
+
+- **A user resource** — an Ash resource with AshAuthentication set up and registered in a domain (can be any module name, e.g. `MyApp.Accounts.User`, `MyApp.Accounts.Person`, etc.)
+
+This is all you need for **controller-only** setups using the `LoadMultiAccount` plug and controller-rendered pages.
+
+### Also add these if using LiveView
+
+These are **not** pulled in transitively — add them to your app's `mix.exs`:
+
+- **AshAuthentication Phoenix** (`ash_authentication_phoenix`) — provides `AshAuthentication.Phoenix.LiveSession` which the multi-account LiveView hook runs alongside. Also provides the auth controller (`AshAuthentication.Phoenix.Controller`) that the Igniter installer auto-detects and patches.
+- **Phoenix LiveView** (`phoenix_live_view`) — needed for the LiveView hook (`AshMultiAccount.Phoenix.LiveHook`) and the account switcher component (`AshMultiAccount.Phoenix.Components`).
+
+The installer patches your existing resources and router; it does not create a User resource, domain, or authentication setup from scratch.
 
 Specific version requirements are defined in the library's `mix.exs` — running `mix deps.get` will ensure compatible versions are resolved automatically.
 
@@ -37,8 +60,16 @@ Run `mix deps.get` to fetch the dependency.
 
 The Igniter installer automates steps 1–6 (resource extensions, linked account creation, domain registration, auth controller patching, controller creation, and router setup). Steps 7–8 (LiveView hook and account switcher component) are app-specific and provided as post-install instructions.
 
+> **Note:** The Igniter installer requires `igniter` as a dependency in your app. If you don't already have it, add `{:igniter, "~> 0.6"}` to your deps and run `mix deps.get` before proceeding.
+
 ```sh
 mix igniter.install ash_multi_account
+```
+
+If `ash_multi_account` is a path or git dependency (not yet on Hex), run the installer directly instead:
+
+```sh
+mix ash_multi_account.install
 ```
 
 You can also specify resource module names explicitly:

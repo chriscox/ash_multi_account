@@ -37,17 +37,18 @@ defmodule AshMultiAccount.MixProject do
 
   defp deps do
     [
-      # Core Ash
+      # Core
       {:ash, "~> 3.0"},
       {:spark, "~> 2.0"},
+      {:ash_authentication, "~> 4.0"},
+      {:phoenix, "~> 1.7"},
 
-      # Optional — Phoenix integration
-      {:ash_authentication, "~> 4.0", optional: true},
-      {:phoenix, "~> 1.7", optional: true},
+      # Optional — LiveView and AshAuthentication Phoenix integration
+      {:ash_authentication_phoenix, "~> 2.0", optional: true},
       {:phoenix_live_view, "~> 1.0", optional: true},
 
       # Optional — installer support (compile-time only)
-      {:sourceror, "~> 1.7", runtime: false},
+      {:sourceror, "~> 1.7", optional: true, runtime: false},
       {:igniter, "~> 0.6", optional: true, runtime: false},
 
       # Dev/test

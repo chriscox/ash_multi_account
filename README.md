@@ -33,11 +33,20 @@ Ash Multi Account picks up where AshAuthentication leaves off, adding multi-acco
 
 ## Built On
 
-Ash Multi Account is an extension for the [Ash Framework](https://ash-hq.org/) ecosystem. It builds on:
+Ash Multi Account is an extension for the [Ash Framework](https://ash-hq.org/) ecosystem.
+
+**Required** — pulled in automatically as dependencies:
 
 - **[Ash](https://hexdocs.pm/ash)** — resources, actions, and the DSL extension system (Spark)
 - **[AshAuthentication](https://hexdocs.pm/ash_authentication)** — user authentication and session management
-- **[Phoenix](https://hexdocs.pm/phoenix)** / **[Phoenix LiveView](https://hexdocs.pm/phoenix_live_view)** — controller mixin, LiveView hook, router macros, and the account switcher component
+- **[Phoenix](https://hexdocs.pm/phoenix)** — controller mixin, router macros, plugs, and session management
+
+This is all you need for **controller-only** setups using the `LoadMultiAccount` plug.
+
+**Also add these** if using LiveView:
+
+- **[AshAuthentication Phoenix](https://hexdocs.pm/ash_authentication_phoenix)** — provides `AshAuthentication.Phoenix.LiveSession` which the multi-account LiveView hook runs alongside, and the auth controller (`AshAuthentication.Phoenix.Controller`) that the installer auto-detects and patches
+- **[Phoenix LiveView](https://hexdocs.pm/phoenix_live_view)** — needed for the LiveView hook (`AshMultiAccount.Phoenix.LiveHook`) and the account switcher component (`AshMultiAccount.Phoenix.Components`)
 
 Works with **any Ash data layer** (Postgres, SQLite, ETS, etc.) and **any AshAuthentication strategy** (password, OAuth, magic links, etc.).
 
