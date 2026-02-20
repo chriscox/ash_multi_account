@@ -18,22 +18,54 @@ AshMultiAccount is **strategy-agnostic**. It works with any AshAuthentication st
 
 ## Installation
 
-> **Igniter installer coming soon.** A `mix igniter.install ash_multi_account` task is planned that will automate the setup below. For now, follow the manual steps.
-
-AshMultiAccount is not yet published to Hex. Use a path or git dependency:
+Add `ash_multi_account` to your dependencies:
 
 ```elixir
 # mix.exs
 def deps do
   [
-    {:ash_multi_account, path: "../ash_multi_account"}
-    # or
-    # {:ash_multi_account, github: "chriscox/ash_multi_account"}
+    {:ash_multi_account, "~> 0.1.0"}
   ]
 end
 ```
 
 Run `mix deps.get` to fetch the dependency.
+
+<!-- tabs-open -->
+
+### Using Igniter (recommended)
+
+The Igniter installer automates steps 1–6 (resource extensions, linked account creation, domain registration, auth controller patching, controller creation, and router setup). Steps 7–8 (LiveView hook and account switcher component) are app-specific and provided as post-install instructions.
+
+```sh
+mix igniter.install ash_multi_account
+```
+
+You can also specify resource module names explicitly:
+
+```sh
+mix igniter.install ash_multi_account \
+  --user MyApp.Accounts.User \
+  --linked-account MyApp.Accounts.LinkedAccount
+```
+
+After running the installer, follow the post-install instructions it prints for:
+
+- Adding the LiveView `on_mount` hook (Step 7 below)
+- Adding the account switcher component (Step 8 below)
+
+If using a database-backed data layer (AshPostgres, AshSqlite), update the generated LinkedAccount resource's data layer configuration and run migrations:
+
+```bash
+mix ash.codegen create_linked_accounts
+mix ash.migrate
+```
+
+### Manual
+
+Follow all steps below to set up AshMultiAccount manually.
+
+<!-- tabs-close -->
 
 ## Step 1: Add the Extension to Your User Resource
 
@@ -250,7 +282,7 @@ Use the slot-based component in your layout or navigation:
     <.link :if={!account.current?} href={account.switch_url}>
       {account.user.name}
     </.link>
-    <span :if={account.current?}>{account.user.name} (active)</span>
+    <span :if={account.current?}>{account.user.name} (current)</span>
   </:account>
   <:add_account :let={url}>
     <.link href={url}>Add another account</.link>

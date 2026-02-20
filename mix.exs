@@ -41,17 +41,19 @@ defmodule AshMultiAccount.MixProject do
       {:ash, "~> 3.0"},
       {:spark, "~> 2.0"},
 
-      # Optional — needed for Phase 3 (Phoenix integration)
+      # Optional — Phoenix integration
       {:ash_authentication, "~> 4.0", optional: true},
       {:phoenix, "~> 1.7", optional: true},
       {:phoenix_live_view, "~> 1.0", optional: true},
 
+      # Optional — installer support (compile-time only)
+      {:sourceror, "~> 1.7", runtime: false},
+      {:igniter, "~> 0.6", optional: true, runtime: false},
+
       # Dev/test
-      {:sourceror, "~> 1.7", only: [:dev, :test], runtime: false},
       {:ex_doc, "~> 0.34", only: [:dev, :test], runtime: false},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
-      {:igniter, "~> 0.6", only: [:dev], runtime: false},
       {:usage_rules, "~> 1.1", only: [:dev], runtime: false}
     ]
   end
@@ -135,7 +137,7 @@ defmodule AshMultiAccount.MixProject do
   end
 
   defp dsl_extras do
-    if Code.ensure_loaded?(Spark.Docs) do
+    if Code.ensure_loaded?(Spark.Docs) and Code.ensure_loaded?(AshMultiAccount) do
       [
         {"documentation/dsls/DSL-AshMultiAccount.md",
          search_data: Spark.Docs.search_data_for(AshMultiAccount)},

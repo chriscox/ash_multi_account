@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/chriscox/ash_multi_account/actions/workflows/ci.yml/badge.svg)](https://github.com/chriscox/ash_multi_account/actions/workflows/ci.yml)
 
-**Status: In Development — not yet published to Hex**
+**Status: In Development — publishing to Hex soon**
 
 Multi-account linking and switching for [Ash](https://ash-hq.org/) apps. Let users link multiple accounts together and switch between them without re-authenticating — similar to Google/Apple's account switcher UX.
 
@@ -119,15 +119,18 @@ See the [demo README](example/demo/README.md) for setup instructions and a walkt
 
 ## Installation
 
-Not yet published to Hex. During development, use a path dependency:
-
 ```elixir
-def deps do
-  [
-    {:ash_multi_account, path: "../ash_multi_account"}
-  ]
-end
+# mix.exs
+{:ash_multi_account, "~> 0.1.0"}
 ```
+
+The recommended way to get started is with the Igniter installer, which automates resource setup, domain registration, controller creation, and router configuration:
+
+```sh
+mix igniter.install ash_multi_account
+```
+
+See the [Getting Started guide](documentation/tutorials/getting-started.md) for manual setup or additional options.
 
 ## License
 
