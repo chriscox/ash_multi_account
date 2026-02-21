@@ -87,8 +87,7 @@ defmodule AshMultiAccount.MixProject do
       name: "ash_multi_account",
       licenses: ["MIT"],
       links: %{"GitHub" => @source_url},
-      files:
-        ~w(lib documentation .formatter.exs mix.exs README.md LICENSE CHANGELOG.md)
+      files: ~w(lib documentation .formatter.exs mix.exs README.md LICENSE CHANGELOG.md)
     ]
   end
 
