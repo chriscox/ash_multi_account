@@ -4,9 +4,6 @@
 
 Multi-account linking and switching for [Phoenix](https://www.phoenixframework.org/) apps using [Ash](https://ash-hq.org/) and [AshAuthentication](https://hexdocs.pm/ash_authentication). Let users add multiple accounts and switch between them without re-authenticating — similar to Google/Apple's account switcher UX.
 
-<!-- Screenshot: account switcher dropdown showing linked accounts -->
-<!-- ![Account switcher dropdown](documentation/assets/images/account-switcher-dropdown.png) -->
-
 ## Why?
 
 [AshAuthentication](https://hexdocs.pm/ash_authentication) and [AshAuthentication.Phoenix](https://hexdocs.pm/ash_authentication_phoenix) provide excellent single-user authentication — strategies, session management, and LiveView integration all work out of the box. But many apps need users to link and switch between multiple accounts: family accounts, work/personal separation, admin impersonation. That's a different problem entirely, requiring its own session management, security considerations (session fixation, authorization checks), and UI integration across both LiveView and controller-rendered pages.
@@ -98,6 +95,8 @@ The demo includes two pages to demonstrate that multi-account works with both re
 Both pages show the same user data, account switcher, and multi-account status — proving the library works identically in both contexts. Switch between them using the tabs at the top of each page.
 
 See the [demo README](example/demo/README.md) for setup instructions and a walkthrough.
+
+<img src="documentation/assets/images/demo-screenshot.png" alt="Demo app showing the account switcher dropdown" width="500">
 
 ## Installation
 
