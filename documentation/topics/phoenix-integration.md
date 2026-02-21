@@ -89,12 +89,13 @@ scope "/", MyAppWeb do
 end
 ```
 
-This generates two GET routes:
+This generates three routes:
 
-| Route | Action | Purpose |
-|-------|--------|---------|
-| `/link/p/:primary_user_id` | `:link_account` | Initiate or complete account linking |
-| `/link/switch_to/:user_id` | `:switch_to_account` | Switch to a linked account |
+| Method | Route | Action | Purpose |
+|--------|-------|--------|---------|
+| GET | `/link/p/:primary_user_id` | `:link_account` | Initiate linking or render auto-submit form |
+| POST | `/link/p/:primary_user_id` | `:link_account` | Complete account linking (creates record) |
+| GET | `/link/switch_to/:user_id` | `:switch_to_account` | Switch to a linked account |
 
 Custom paths are supported:
 
@@ -133,7 +134,10 @@ Handles three cases:
 
 1. **No authenticated user** — redirects to sign-in with a flash error
 2. **Primary user matches current user** — sets up the multi-account session and redirects to sign-in (so the user can authenticate another account)
-3. **Different user** — creates a LinkedAccount record tying the current user to the primary, then redirects to `after_link_path`
+3. **Different user (GET)** — renders a minimal auto-submitting HTML form that immediately POSTs with a CSRF token. This preserves REST semantics (no record creation on GET) while working with the 302 redirect from the auth callback.
+4. **Different user (POST)** — creates a LinkedAccount record tying the current user to the primary, then redirects to `after_link_path`
+
+The GET→auto-submit→POST pattern is the same approach used by OAuth, SAML, and payment gateway flows for state-changing operations after redirects.
 
 ### switch_to_account/2
 

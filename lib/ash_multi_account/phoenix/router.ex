@@ -16,8 +16,9 @@ defmodule AshMultiAccount.Phoenix.Router do
 
   This generates:
 
-      get "/link/p/:primary_user_id", MultiAccountController, :link_account
-      get "/link/switch_to/:user_id", MultiAccountController, :switch_to_account
+      get  "/link/p/:primary_user_id", MultiAccountController, :link_account
+      post "/link/p/:primary_user_id", MultiAccountController, :link_account
+      get  "/link/switch_to/:user_id", MultiAccountController, :switch_to_account
 
   ## Custom Paths
 
@@ -44,6 +45,7 @@ defmodule AshMultiAccount.Phoenix.Router do
 
     quote do
       get unquote(link_path), unquote(controller), :link_account
+      post unquote(link_path), unquote(controller), :link_account
       get unquote(switch_path), unquote(controller), :switch_to_account
     end
   end

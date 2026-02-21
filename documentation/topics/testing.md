@@ -313,6 +313,41 @@ defmodule MyApp.ControllerTest do
     assert get_session(conn, "session_token") != nil
   end
 
+  test "GET cross-user link renders auto-submit form (no record created)" do
+    alice = create_user!("Alice")
+    bob = create_user!("Bob")
+    session_token = Ash.UUID.generate()
+
+    conn =
+      conn(:get, "/link/p/#{alice.id}")
+      |> init_test_session(%{
+        "user" => "user?id=#{bob.id}",
+        "primary_user_id" => alice.id,
+        "session_token" => session_token
+      })
+      |> @endpoint.call(@endpoint.init([]))
+
+    assert conn.status == 200
+    assert conn.resp_body =~ ~s(method="post")
+  end
+
+  test "POST cross-user link creates the linked account" do
+    alice = create_user!("Alice")
+    bob = create_user!("Bob")
+    session_token = Ash.UUID.generate()
+
+    conn =
+      conn(:post, "/link/p/#{alice.id}")
+      |> init_test_session(%{
+        "user" => "user?id=#{bob.id}",
+        "primary_user_id" => alice.id,
+        "session_token" => session_token
+      })
+      |> @endpoint.call(@endpoint.init([]))
+
+    assert conn.status == 302
+  end
+
   test "switch_to_account switches the active user" do
     alice = create_user!("Alice")
     bob = create_user!("Bob")

@@ -26,6 +26,9 @@ defmodule AshMultiAccount.Phoenix.Controller do
   - `link_account(conn, %{"primary_user_id" => id})` — links the current user
     to an existing primary account, or sets up the multi-account session for the
     primary user themselves. Redirects to sign-in if no user is authenticated.
+    For cross-user linking, GET renders an auto-submitting form (preserving
+    REST semantics after the auth redirect), and POST creates the LinkedAccount
+    record.
 
   - `switch_to_account(conn, %{"user_id" => id})` — switches the current session
     to a different linked user. Rotates the session ID via
@@ -188,7 +191,16 @@ defmodule AshMultiAccount.Phoenix.Controller do
             session_token = Session.get_session_token(conn)
 
             if session_token do
-              create_link(conn, current_user, primary_user, session_token)
+              if conn.method == "POST" do
+                create_link(conn, current_user, primary_user, session_token)
+              else
+                # The auth callback redirects here via 302, which browsers always
+                # follow as GET. Render an auto-submitting form so the record is
+                # created via POST, preserving REST semantics.
+                conn
+                |> Plug.Conn.put_resp_content_type("text/html")
+                |> Plug.Conn.send_resp(200, link_confirm_html(conn))
+              end
             else
               conn
               |> Session.put_multi_account_session(primary_user.id, Ash.UUID.generate())
@@ -248,6 +260,25 @@ defmodule AshMultiAccount.Phoenix.Controller do
             |> put_flash(:error, flash_message)
             |> redirect(to: sign_in_path(conn, primary_user.id))
         end
+      end
+
+      defp link_confirm_html(conn) do
+        action = Plug.HTML.html_escape(conn.request_path)
+        csrf_token = Plug.CSRFProtection.get_csrf_token()
+
+        """
+        <!DOCTYPE html>
+        <html>
+        <head><title>Linking account…</title></head>
+        <body>
+          <form id="link-form" method="post" action="#{action}">
+            <input type="hidden" name="_csrf_token" value="#{csrf_token}">
+            <noscript><button type="submit">Link Account</button></noscript>
+          </form>
+          <script>document.getElementById("link-form").submit();</script>
+        </body>
+        </html>
+        """
       end
 
       defp identity_error?(%Ash.Error.Invalid{errors: errors}) do

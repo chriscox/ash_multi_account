@@ -127,16 +127,27 @@ defmodule DemoWeb.MultiAccountTest do
           "user" => %{"email" => to_string(bob.email), "password" => password}
         })
 
-      # The return_to should redirect to the link endpoint
+      # 4. GET the link endpoint — returns auto-submit form (cross-user link)
       conn = get(recycle(conn), ~p"/link/p/#{alice.id}")
+      assert conn.status == 200
+      csrf_token = extract_csrf_token(conn)
+
+      # 5. POST to complete the link
+      conn = post(recycle(conn), ~p"/link/p/#{alice.id}", %{"_csrf_token" => csrf_token})
 
       # Bob should now be linked to Alice
       assert redirected_to(conn) == "/"
 
-      # 4. Switch back to Alice
+      # 6. Switch back to Alice
       conn = get(recycle(conn), ~p"/link/switch_to/#{alice.id}")
       assert redirected_to(conn) == "/"
     end
+  end
+
+  defp extract_csrf_token(conn) do
+    body = Phoenix.ConnTest.html_response(conn, 200)
+    [_, token] = Regex.run(~r/name="_csrf_token" value="([^"]+)"/, body)
+    token
   end
 
   describe "sign out" do

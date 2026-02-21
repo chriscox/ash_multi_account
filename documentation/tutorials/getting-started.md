@@ -293,8 +293,9 @@ defmodule MyAppWeb.Router do
     pipe_through :browser
 
     # Generates:
-    #   GET /link/p/:primary_user_id  -> MultiAccountController.link_account
-    #   GET /link/switch_to/:user_id  -> MultiAccountController.switch_to_account
+    #   GET  /link/p/:primary_user_id  -> MultiAccountController.link_account
+    #   POST /link/p/:primary_user_id  -> MultiAccountController.link_account
+    #   GET  /link/switch_to/:user_id  -> MultiAccountController.switch_to_account
     multi_account_routes MultiAccountController, MyApp.Accounts.User
   end
 end

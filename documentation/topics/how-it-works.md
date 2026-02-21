@@ -77,8 +77,14 @@ Here's what happens when a user links a new account:
    ↓
 5. GET /link/p/:user_a_id  →  Controller.link_account/2 (again)
    ↓
-6. primary_user_id != current user → link_to_primary
-   - Creates LinkedAccount record: primary=User A, linked=User B, session_token
+6. primary_user_id != current user → renders auto-submit form
+   - Returns minimal HTML page with a form that POSTs to the same path
+   - Form includes a CSRF token and auto-submits via JavaScript
+   - (noscript fallback: user clicks "Link Account" button)
+   ↓
+7. POST /link/p/:user_a_id  →  Controller.link_account/2
+   ↓
+8. Creates LinkedAccount record: primary=User A, linked=User B, session_token
    - Sets primary_user_id in session
    - Redirects to after_link_path
 ```

@@ -4,16 +4,28 @@ defmodule AshMultiAccount.Phoenix.RouterTest do
   alias AshMultiAccount.Test.Router
 
   describe "multi_account_routes/3" do
-    test "generates link_account route with default path" do
+    test "generates GET link_account route with default path" do
       route =
         Enum.find(Phoenix.Router.routes(Router), fn route ->
           route.plug == AshMultiAccount.Test.Controller and
-            route.plug_opts == :link_account
+            route.plug_opts == :link_account and
+            route.verb == :get
         end)
 
       assert route != nil
       assert route.path == "/link/p/:primary_user_id"
-      assert route.verb == :get
+    end
+
+    test "generates POST link_account route with default path" do
+      route =
+        Enum.find(Phoenix.Router.routes(Router), fn route ->
+          route.plug == AshMultiAccount.Test.Controller and
+            route.plug_opts == :link_account and
+            route.verb == :post
+        end)
+
+      assert route != nil
+      assert route.path == "/link/p/:primary_user_id"
     end
 
     test "generates switch_to_account route with default path" do

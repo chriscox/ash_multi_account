@@ -74,7 +74,7 @@ defmodule AshMultiAccount.Phoenix.ControllerTest do
       assert get_session(conn, "session_token") != nil
     end
 
-    test "creates linked account for cross-user link", %{
+    test "GET cross-user link renders auto-submit form", %{
       primary_user: primary_user,
       linked_user: linked_user,
       session_token: session_token
@@ -86,6 +86,37 @@ defmodule AshMultiAccount.Phoenix.ControllerTest do
         )
 
       conn = get(conn, "/link/p/#{primary_user.id}")
+
+      assert conn.status == 200
+      body = html_response(conn, 200)
+      assert body =~ ~s(method="post")
+      assert body =~ ~s(name="_csrf_token")
+      assert body =~ ~s(id="link-form")
+
+      # Verify no linked account was created
+      accounts =
+        LinkedAccount
+        |> Ash.Query.for_read(:get_linked_accounts, %{
+          primary_user_id: primary_user.id,
+          session_token: session_token
+        })
+        |> Ash.read!()
+
+      assert accounts == []
+    end
+
+    test "POST creates linked account for cross-user link", %{
+      primary_user: primary_user,
+      linked_user: linked_user,
+      session_token: session_token
+    } do
+      conn =
+        conn_with_user(linked_user,
+          primary_user_id: primary_user.id,
+          session_token: session_token
+        )
+
+      conn = post(conn, "/link/p/#{primary_user.id}")
 
       assert redirected_to(conn) == "/"
       assert flash(conn, :info) =~ "successfully linked"
@@ -119,12 +150,14 @@ defmodule AshMultiAccount.Phoenix.ControllerTest do
       primary_user: primary_user,
       linked_user: linked_user
     } do
+      # No explicit session_token — Plug generates one automatically
       conn = conn_with_user(linked_user)
       conn = get(conn, "/link/p/#{primary_user.id}")
 
-      # Should set up session token and redirect back
+      # Plug ensures a session_token exists, so GET renders auto-submit form
+      assert conn.status == 200
+      assert conn.resp_body =~ ~s(method="post")
       assert get_session(conn, "session_token") != nil
-      assert get_session(conn, "primary_user_id") == primary_user.id
     end
   end
 
