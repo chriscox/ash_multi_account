@@ -2,8 +2,6 @@
 
 [![CI](https://github.com/chriscox/ash_multi_account/actions/workflows/ci.yml/badge.svg)](https://github.com/chriscox/ash_multi_account/actions/workflows/ci.yml)
 
-**Status: In Development — publishing to Hex soon**
-
 Multi-account linking and switching for [Ash](https://ash-hq.org/) apps. Let users link multiple accounts together and switch between them without re-authenticating — similar to Google/Apple's account switcher UX.
 
 <!-- Screenshot: account switcher dropdown showing linked accounts -->
@@ -119,3 +117,7 @@ See the [Getting Started guide](documentation/tutorials/getting-started.md) for 
 ## License
 
 MIT — see `LICENSE`.
+
+---
+
+AshMultiAccount is an independent project by [Chris Cox](https://github.com/chriscox), not affiliated with or maintained by the Ash Framework team. Built as a contribution back to the Phoenix and Ash community that has given me so much.

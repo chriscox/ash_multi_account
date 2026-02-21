@@ -248,13 +248,13 @@ defmodule MyAppWeb.AuthController do
 
   def sign_out(conn, _params) do
     conn
-    |> clear_session(:my_app)
+    |> clear_session(:YOUR_OTP_APP)
     |> redirect(to: ~p"/sign-in")
   end
 end
 ```
 
-> **Note:** Replace `:my_app` in `clear_session(:my_app)` with your OTP application name (the `:app` value in your `mix.exs` project config).
+> **Note:** Replace `:YOUR_OTP_APP` in `clear_session/1` with your OTP application name (the `:app` value in your `mix.exs` project config).
 
 > **Why is `put_user_id` needed?** AshAuthentication stores a JWT subject string in the session. The multi-account hook needs a plain user ID to resolve the current user after account switches. `put_user_id/3` writes the subject in a format both systems can read.
 
