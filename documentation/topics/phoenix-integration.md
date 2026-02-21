@@ -162,6 +162,16 @@ live_session :authenticated,
 end
 ```
 
+An optional keyword list can be passed as a third tuple element to configure the hook:
+
+```elixir
+{AshMultiAccount.Phoenix.LiveHook, {:load_multi_account, MyApp.Accounts.User, sign_out_path: "/logout"}}
+```
+
+| Option | Default | Purpose |
+|--------|---------|---------|
+| `:sign_out_path` | `"/sign-out"` | Where to redirect on fatal errors (inactive user, load failure) |
+
 ### Multi-Account Mode
 
 When `multi_account_session?` is true (both `"primary_user_id"` and `"session_token"` are in the session):
@@ -182,7 +192,7 @@ When no multi-account session exists:
 ### Error Handling
 
 - If the primary user is **not found** (e.g., stale session after data reset), the hook falls back to standard mode — resolving the current user from the session or socket assigns without multi-account context
-- If the primary user is **not active**, the hook halts with a flash error and redirects to `/sign-out`
+- If the primary user is **not active**, the hook halts with a flash error and redirects to the configured `sign_out_path` (default: `/sign-out`)
 - If loading fails with an unexpected error, the hook halts with a generic error message
 
 ## Components

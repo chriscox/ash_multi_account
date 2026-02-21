@@ -17,6 +17,14 @@ defmodule AshMultiAccount.Phoenix.LiveHook do
   The hook name is a tuple `{:load_multi_account, user_resource}` so the user
   resource module is passed at the call site — no global application config needed.
 
+  ## Options
+
+  An optional keyword list can be passed as a third tuple element:
+
+      {AshMultiAccount.Phoenix.LiveHook, {:load_multi_account, MyApp.Accounts.User, sign_out_path: "/logout"}}
+
+  - `:sign_out_path` — path to redirect to on fatal errors (default: `"/sign-out"`).
+
   ## Assigns Set
 
   - `:current_user` — the user currently acting (may differ from primary in multi-account mode)
@@ -32,7 +40,8 @@ defmodule AshMultiAccount.Phoenix.LiveHook do
 
   - If the primary user is **not found** (e.g., stale session after data reset),
     the hook falls back to standard mode
-  - If the primary user is **not active**, the hook halts and redirects to `/sign-out`
+  - If the primary user is **not active**, the hook halts and redirects to the
+    configured `sign_out_path` (default: `"/sign-out"`)
   - If loading fails with an unexpected error, the hook halts with a generic error message
   """
 
@@ -43,21 +52,29 @@ defmodule AshMultiAccount.Phoenix.LiveHook do
 
   require Logger
 
+  @default_sign_out_path "/sign-out"
+
   @spec on_mount(
-          {:load_multi_account, module()},
+          {:load_multi_account, module()} | {:load_multi_account, module(), keyword()},
           map(),
           map(),
           Phoenix.LiveView.Socket.t()
         ) :: {:cont | :halt, Phoenix.LiveView.Socket.t()}
-  def on_mount({:load_multi_account, user_resource}, _params, session, socket) do
+  def on_mount({:load_multi_account, user_resource}, params, session, socket) do
+    on_mount({:load_multi_account, user_resource, []}, params, session, socket)
+  end
+
+  def on_mount({:load_multi_account, user_resource, opts}, _params, session, socket) do
+    sign_out_path = Keyword.get(opts, :sign_out_path, @default_sign_out_path)
+
     if Session.multi_account_session?(session) do
-      handle_multi_account(user_resource, session, socket)
+      handle_multi_account(user_resource, session, socket, sign_out_path)
     else
       handle_standard(user_resource, session, socket)
     end
   end
 
-  defp handle_multi_account(user_resource, session, socket) do
+  defp handle_multi_account(user_resource, session, socket, sign_out_path) do
     primary_user_id = Session.get_primary_user_id(session)
     session_token = Session.get_session_token(session)
 
@@ -100,15 +117,13 @@ defmodule AshMultiAccount.Phoenix.LiveHook do
           {:error, :not_active} ->
             Logger.info("Primary user #{primary_user.id} is not active, halting")
 
-            # TODO: Consider making sign-out path configurable,
-            # matching Controller's overridable sign_out_path/1
             {:halt,
              socket
              |> Phoenix.LiveView.put_flash(
                :error,
                "Your session is no longer valid. Please sign in again."
              )
-             |> Phoenix.LiveView.redirect(to: "/sign-out")}
+             |> Phoenix.LiveView.redirect(to: sign_out_path)}
         end
 
       {:error, error} ->
@@ -120,7 +135,7 @@ defmodule AshMultiAccount.Phoenix.LiveHook do
            :error,
            "Something went wrong loading your account. Please try again."
          )
-         |> Phoenix.LiveView.redirect(to: "/sign-out")}
+         |> Phoenix.LiveView.redirect(to: sign_out_path)}
     end
   end
 

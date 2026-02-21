@@ -163,7 +163,43 @@ defmodule AshMultiAccount.Phoenix.LiveHookTest do
       {:halt, socket} =
         LiveHook.on_mount({:load_multi_account, User}, %{}, session, socket)
 
-      assert socket.redirected != nil
+      assert {:redirect, %{to: "/sign-out"}} = socket.redirected
+    end
+
+    test "halts with custom sign_out_path when primary user is not active", %{
+      linked_user: linked_user,
+      session_token: session_token
+    } do
+      inactive_primary =
+        User
+        |> Ash.Changeset.for_create(:create, %{name: "Inactive Primary", status: :inactive})
+        |> Ash.create!()
+
+      LinkedAccount
+      |> Ash.Changeset.for_create(
+        :create_linked_account,
+        %{linked_user_id: linked_user.id, session_token: session_token},
+        actor: inactive_primary
+      )
+      |> Ash.create!()
+
+      session = %{
+        "user" => "user?id=#{inactive_primary.id}",
+        "primary_user_id" => inactive_primary.id,
+        "session_token" => session_token
+      }
+
+      socket = build_socket(%{current_user: inactive_primary})
+
+      {:halt, socket} =
+        LiveHook.on_mount(
+          {:load_multi_account, User, sign_out_path: "/custom-logout"},
+          %{},
+          session,
+          socket
+        )
+
+      assert {:redirect, %{to: "/custom-logout"}} = socket.redirected
     end
 
     test "falls back to standard mode when primary user not found", %{
