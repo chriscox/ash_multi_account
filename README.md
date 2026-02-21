@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/chriscox/ash_multi_account/actions/workflows/ci.yml/badge.svg)](https://github.com/chriscox/ash_multi_account/actions/workflows/ci.yml) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) [![Hex version badge](https://img.shields.io/hexpm/v/ash_multi_account.svg)](https://hex.pm/packages/ash_multi_account) [![Hexdocs badge](https://img.shields.io/badge/docs-hexdocs-purple)](https://hexdocs.pm/ash_multi_account)
 
-Multi-account linking and switching for [Ash](https://ash-hq.org/) apps. Let users link multiple accounts together and switch between them without re-authenticating — similar to Google/Apple's account switcher UX.
+Multi-account linking and switching for [Phoenix](https://www.phoenixframework.org/) apps using [Ash](https://ash-hq.org/) and [AshAuthentication](https://hexdocs.pm/ash_authentication). Let users add multiple accounts and switch between them without re-authenticating — similar to Google/Apple's account switcher UX.
 
 <!-- Screenshot: account switcher dropdown showing linked accounts -->
 <!-- ![Account switcher dropdown](documentation/assets/images/account-switcher-dropdown.png) -->
