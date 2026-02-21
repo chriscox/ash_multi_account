@@ -1,7 +1,7 @@
 defmodule AshMultiAccount.MixProject do
   use Mix.Project
 
-  @version "0.1.0"
+  @version "0.1.1"
   @description "Multi-account linking and switching for Ash apps"
   @source_url "https://github.com/chriscox/ash_multi_account"
 

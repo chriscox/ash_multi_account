@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.1.1 (2026-02-20)
+
+### Enhancements
+- Make `LiveHook` `sign_out_path` configurable via `on_mount` opts (default: `"/sign-out"`)
+- Add POST link route and auto-submitting GET flow to preserve REST semantics for cross-user linking
+
 ## v0.1.0 (2026-02-20)
 
 Initial release — multi-account linking and switching for Phoenix apps using Ash and AshAuthentication.
